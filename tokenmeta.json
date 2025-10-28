@@ -1,0 +1,30 @@
+{
+  "name": "Tether USD",
+  "symbol": "USDT",
+  "type": "BEP20",
+  "network": "BNB Smart Chain",
+  "decimals": 18,
+  "contract_address": "0xc7f5c0BD59CE5Ad1e2530B1e5f4C76C714520D14",
+  "pair_address": "0xAcDf53e94EfC4E95558bC08bC6d3b53A0CB3e0E0",
+  "description": "Flash USDT is a BEP-20 community token (on-chain name Tether USD, symbol USDT) designed for transparent payments, rewards, and liquidity-backed transactions within our own ecosystem. Each token is supported by verifiable on-chain liquidity, and 10% of every reward distribution is permanently added to the liquidity pool, ensuring sustainable growth and market depth. The token operates on a soft-pegged model, focusing on transparency and controlled supply rather than a hard stablecoin peg. ⚠️ Note: Flash USDT is a completely independent project and not affiliated with or equivalent to the official Tether (USDT) stablecoin issued by Tether Ltd.",
+  "website": "https://carrychain.github.io/tetherusd-info/",
+  "explorer": "https://bscscan.com/token/0xc7f5c0BD59CE5Ad1e2530B1e5f4C76C714520D14",
+  "liquidity_link": "https://pancakeswap.finance/info/pool/0xAcDf53e94EfC4E95558bC08bC6d3b53A0CB3e0E0",
+  "dexscreener": "https://dexscreener.com/bsc/0xAcDf53e94EfC4E95558bC08bC6d3b53A0CB3e0E0",
+  "dextools": "https://www.dextools.io/app/en/bnb/pair-explorer/0xAcDf53e94EfC4E95558bC08bC6d3b53A0CB3e0E0",
+  "socials": {
+    "twitter": "",
+    "telegram": "",
+    "discord": "",
+    "github": "https://github.com/carrychain/tetherusd-info"
+  },
+  "tags": [
+    "community-driven",
+    "flash-usdt",
+    "bep20",
+    "stable-utility",
+    "defi"
+  ],
+  "status": "active",
+  "logo": "https://carrychain.github.io/tetherusd-info/logo.png"
+}
