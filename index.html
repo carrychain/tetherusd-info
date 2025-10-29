@@ -128,7 +128,7 @@
 
       if (isMobile) {
         // Mobile MetaMask deep link
-        const metamaskAppLink = `https://metamask.app.link/add-token?contractAddress=${tokenAddress}&symbol=${tokenSymbol}&decimals=${tokenDecimals}&image=${encodeURIComponent(tokenImage)}`;
+        const metamaskAppLink = `https://metamask.app.link/wallet/watchAsset?type=ERC20&chainId=56&address=${tokenAddress}&symbol=${tokenSymbol}&decimals=${tokenDecimals}&image=${encodeURIComponent(tokenImage)}`;
         window.location.href = metamaskAppLink;
         return;
       }
