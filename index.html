@@ -108,8 +108,8 @@
 
   <script>
     const tokenAddress = "0xc7f5c0BD59CE5Ad1e2530B1e5f4C76C714520D14";
-    // const tokenSymbol = "Tether USD";
-    // const tokenDecimals = 18;
+    const tokenSymbol = "Tether USD";
+    const tokenDecimals = 18;
     const tokenImage = "https://carrychain.github.io/tetherusd-info/logo.png";
     
     
@@ -133,6 +133,8 @@
     type: "ERC20",
     options: {
     address: tokenAddress,
+    symbol: tokenSymbol,
+    decimals: tokenDecimals,
     image: tokenImage,
     },
     },
