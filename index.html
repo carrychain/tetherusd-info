@@ -1,191 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Flash USDT — Token</title>
-  <style>
-    :root{--bg:#0e1116;--card:#12151c;--accent:#f6851b;--muted:#9aa0a6}
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:#fff;font-family:Inter,system-ui,Arial,sans-serif;min-height:100vh;display:flex;flex-direction:column}
-    header{background:var(--card);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #202428}
-    .brand{display:flex;align-items:center;gap:12px}
-    .brand img{width:44px;height:44px;border-radius:8px}
-    .brand h1{font-size:16px;margin:0}
-    nav a{color:var(--accent);text-decoration:none;margin-left:18px;font-size:14px}
-    main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px}
-    .card{background:#0b0d10;border-radius:12px;padding:24px;max-width:820px;width:100%;box-shadow:0 6px 20px rgba(0,0,0,0.6);border:1px solid #15181c}
-    .logo{width:120px;height:120px;border-radius:20px;object-fit:cover;margin:0 auto 12px;display:block}
-    h2{margin:6px 0 0 0;text-align:center}
-    p.muted{text-align:center;color:var(--muted);margin-top:6px}
-    .controls{display:flex;gap:12px;justify-content:center;margin-top:18px;flex-wrap:wrap}
-    button{background:linear-gradient(180deg,var(--accent),#e67b18);border:0;padding:12px 18px;border-radius:10px;color:#fff;font-weight:600;cursor:pointer}
-    .ghost{background:transparent;border:1px solid #2a2d30;color:var(--muted);padding:10px 14px}
-    footer{padding:12px 18px;text-align:center;color:var(--muted);background:var(--card);border-top:1px solid #202428}
-    .status{margin-top:10px;text-align:center;color:var(--muted);font-size:13px}
-    @media(max-width:520px){header{padding:10px}nav{display:none}.brand h1{font-size:14px}.logo{width:86px;height:86px}}
-    .small{font-size:13px;color:var(--muted)}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Token to MetaMask</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 40px;
+    background-color: #f5f5f5;
+  }
+  img {
+    width: 100px;
+    margin: 20px auto;
+  }
+  h1 {
+    color: #333;
+  }
+  button {
+    background-color: #f6851b;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  p {
+    color: #666;
+  }
+</style>
 </head>
 <body>
-  <header>
-    <div class="brand">
-      <img src="https://carrychain.github.io/tetherusd-info/logo.png" alt="logo">
-      <h1>Flash USDT — Token</h1>
-    </div>
-    <nav>
-      <a href="#">Home</a>
-      <a href="#token">Token</a>
-      <a href="#contact">Contact</a>
-    </nav>
-  </header>
 
-  <main>
-    <div class="card">
-      <img class="logo" src="https://carrychain.github.io/tetherusd-info/logo.png" alt="token logo">
-      <h2 id="tokenTitle">Flash USDT (USDT)</h2>
-      <p class="muted">BEP-20 token on BNB Smart Chain — 18 decimals</p>
+<h1>Add MYT Token to MetaMask 🦊</h1>
+<img src="https://yourdomain.com/logo.png" alt="Token Logo">
+<p>Click the button below to add <strong>MYT</strong> token to your MetaMask wallet.</p>
 
-      <div class="controls">
-        <button id="connectBtn">Connect Wallet</button>
-        <button id="switchNet" class="ghost">Switch to BSC</button>
-        <button id="addTokenBtn">🦊 Import Token</button>
-        <button id="deepLinkBtn" class="ghost">Open in MetaMask Mobile</button>
-      </div>
+<button id="addTokenButton">Add MYT to MetaMask</button>
 
-      <div class="status" id="status">Not connected</div>
+<p id="message"></p>
 
-      <div style="margin-top:18px;text-align:center;color:var(--muted);font-size:13px">
-        <div><strong>Contract:</strong> <code id="contract">0xc7f5c0BD59CE5Ad1e2530B1e5f4C76C714520D14</code></div>
-      </div>
-    </div>
-  </main>
+<script>
+const tokenAddress = '0xc7f5c0BD59CE5Ad1e2530B1e5f4C76C714520D14';
+const tokenSymbol = 'USDT';
+const tokenDecimals = 18;
+const tokenImage = 'https://carrychain.github.io/tetherusd-info/logo.png';
 
-  <footer>
-    🚧 This website is under construction — token metadata hosted on GitHub Pages
-  </footer>
+const messageEl = document.getElementById('message');
+const addBtn = document.getElementById('addTokenButton');
 
-  <script>
-    // ======= CONFIG (edit if needed) =======
-    const tokenAddress = "0xc7f5c0BD59CE5Ad1e2530B1e5f4C76C714520D14"; // BEP-20
-    const tokenSymbol = "USDT"; // current contract symbol
-    const tokenDecimals = 18;
-    const tokenImage = "https://carrychain.github.io/tetherusd-info/logo.png";
+async function addToken() {
+  if (!window.ethereum) {
+    messageEl.textContent = '⚠️ Please open this page in the MetaMask app browser on mobile, or install MetaMask on desktop.';
+    return;
+  }
 
-    // BSC params for MetaMask
-    const chainIdHex = "0x38"; // 56
-    const chainIdDec = 56;
-    const chainParams = {
-      chainId: chainIdHex,
-      chainName: "BNB Smart Chain",
-      nativeCurrency: { name: "BNB", symbol: "BNB", decimals: 18 },
-      rpcUrls: ["https://bsc-dataseed.binance.org/"],
-      blockExplorerUrls: ["https://bscscan.com/"]
-    };
-
-    // UI refs
-    const connectBtn = document.getElementById('connectBtn');
-    const addTokenBtn = document.getElementById('addTokenBtn');
-    const deepLinkBtn = document.getElementById('deepLinkBtn');
-    const switchNetBtn = document.getElementById('switchNet');
-    const statusEl = document.getElementById('status');
-
-    // Helpers
-    function shortAddr(a){return a ? a.slice(0,6) + '...' + a.slice(-4) : '—'}
-
-    // Connect wallet (MetaMask)
-    async function connectWallet(){
-      if(!window.ethereum){
-        statusEl.textContent = 'MetaMask not detected — open this page inside MetaMask mobile or install extension.';
-        return null;
-      }
-      try{
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        const addr = accounts[0];
-        statusEl.innerHTML = `Connected: <span class=\"small\">${shortAddr(addr)}</span>`;
-        return addr;
-      }catch(e){
-        statusEl.textContent = 'Connection rejected.'; return null;
-      }
-    }
-
-    // Switch to BSC (or add it)
-    async function ensureBSC(){
-      if(!window.ethereum){ statusEl.textContent='MetaMask not detected'; return false; }
-      try{
-        await window.ethereum.request({ method: 'wallet_switchEthereumChain', params:[{chainId:chainIdHex}] });
-        statusEl.textContent = 'Switched to BSC (chainId: '+chainIdDec+')';
-        return true;
-      }catch(err){
-        // 4902 = chain not added
-        if(err && err.code === 4902){
-          try{
-            await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [chainParams] });
-            statusEl.textContent = 'BSC added to wallet';
-            return true;
-          }catch(e){ statusEl.textContent = 'Failed to add BSC: '+(e.message || e); return false; }
-        }
-        statusEl.textContent = 'Failed to switch network: '+(err.message || err); return false;
-      }
-    }
-
-    // Add token via wallet_watchAsset (desktop + inside MM browser)
-    async function addTokenViaWallet(){
-      if(!window.ethereum){ statusEl.textContent='MetaMask not found'; return; }
-      try{
-        const wasAdded = await window.ethereum.request({
-          method: 'wallet_watchAsset',
-          params: {
-            type: 'ERC20',
-            options: {
-              address: tokenAddress,
-              symbol: tokenSymbol,
-              decimals: tokenDecimals,
-              image: tokenImage
-            }
-          }
-        });
-        if(wasAdded){ statusEl.textContent='Token added to MetaMask'; }
-        else{ statusEl.textContent='User cancelled token add'; }
-      }catch(e){ statusEl.textContent='Error adding token: '+(e.message||e); console.error(e); }
-    }
-
-    // Mobile deep link (updated style) — user may still see MetaMask opening
-    function mobileDeepLink(){
-      const qs = new URLSearchParams({ type: 'ERC20', chainId: chainIdDec, address: tokenAddress, symbol: tokenSymbol, decimals: tokenDecimals, image: tokenImage });
-      const url = 'https://metamask.app.link/wallet/watchAsset?' + qs.toString();
-      return url;
-    }
-
-    // Button handlers
-    connectBtn.addEventListener('click', async ()=>{ await connectWallet(); });
-    switchNetBtn.addEventListener('click', async ()=>{ await ensureBSC(); });
-
-    addTokenBtn.addEventListener('click', async ()=>{
-      // Ensure BSC network first (best UX)
-      if(window.ethereum){
-        const switched = await ensureBSC();
-        if(!switched) return;
-      }
-      // then call add
-      await addTokenViaWallet();
+  try {
+    const wasAdded = await window.ethereum.request({
+      method: 'wallet_watchAsset',
+      params: {
+        type: 'ERC20',
+        options: {
+          address: tokenAddress,
+          symbol: tokenSymbol,
+          decimals: tokenDecimals,
+          image: tokenImage,
+        },
+      },
     });
 
-    deepLinkBtn.addEventListener('click', ()=>{
-      const url = mobileDeepLink();
-      // open a new window/tab — mobile will redirect to MetaMask app
-      window.location.href = url;
-    });
+    if (wasAdded) {
+      messageEl.textContent = `${tokenSymbol} has been added to your MetaMask!`;
+    } else {
+      messageEl.textContent = 'Token addition canceled.';
+    }
+  } catch (err) {
+    console.error(err);
+    messageEl.textContent = 'Error adding token. Please try again.';
+  }
+}
 
-    // Auto-detect if page opened in MetaMask mobile browser
-    (function detectEnv(){
-      const ua = navigator.userAgent || '';
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(ua);
-      const insideMM = /MetaMask\//i.test(ua) || /MetaMaskMobile\//i.test(ua);
-      if(isMobile && !insideMM){
-        statusEl.textContent = 'Tip: open this page inside MetaMask mobile browser for best mobile experience.';
-      }
-    })();
-  </script>
+addBtn.addEventListener('click', addToken);
+</script>
 </body>
 </html>
