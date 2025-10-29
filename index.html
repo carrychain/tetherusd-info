@@ -107,52 +107,59 @@
   </footer>
 
   <script>
-    const tokenAddress = "0xc7f5c0BD59CE5Ad1e2530B1e5f4C76C714520D14";
-    const tokenSymbol = "USDT";
+    const tokenAddress = "0xc7f5c0BD59CE5Ad1e2530B1e5f4C76C714520D14"; // BEP20 on BSC
+    const tokenSymbol = "USDT"; // Update this to your correct symbol
     const tokenDecimals = 18;
     const tokenImage = "https://carrychain.github.io/tetherusd-info/logo.png";
-    
-    
+
+    // BNB Chain parameters
+    const chainId = "0x38"; // Mainnet BSC
+    const chainName = "BNB Smart Chain";
+    const nativeCurrency = {
+      name: "BNB",
+      symbol: "BNB",
+      decimals: 18
+    };
+    const rpcUrls = ["https://bsc-dataseed.binance.org/"];
+    const blockExplorerUrls = ["https://bscscan.com/"];
+
     document.getElementById("addTokenButton").addEventListener("click", async () => {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    
-    
-    if (isMobile) {
-    // Mobile MetaMask deep link
-    const metamaskAppLink = `https://metamask.app.link/add-token?contractAddress=${tokenAddress}&symbol=${tokenSymbol}&decimals=${tokenDecimals}&image=${encodeURIComponent(tokenImage)}`;
-    window.location.href = metamaskAppLink;
-    return;
-    }
-    
-    
-    if (window.ethereum) {
-    try {
-    const wasAdded = await window.ethereum.request({
-    method: "wallet_watchAsset",
-    params: {
-    type: "BEP20",
-    options: {
-    address: tokenAddress,
-    symbol: tokenSymbol,
-    decimals: tokenDecimals,
-    image: tokenImage,
-    },
-    },
-    });
-    
-    
-    if (wasAdded) {
-    alert(`${tokenSymbol} added to MetaMask!`);
-    } else {
-    alert("User canceled the request.");
-    }
-    } catch (error) {
-    console.error("Error adding token:", error);
-    alert("Something went wrong. Check console for details.");
-    }
-    } else {
-    alert("MetaMask not detected! Please install MetaMask first.");
-    }
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+      if (isMobile) {
+        // Mobile MetaMask deep link
+        const metamaskAppLink = `https://metamask.app.link/add-token?contractAddress=${tokenAddress}&symbol=${tokenSymbol}&decimals=${tokenDecimals}&image=${encodeURIComponent(tokenImage)}`;
+        window.location.href = metamaskAppLink;
+        return;
+      }
+
+      if (window.ethereum) {
+        try {
+          const wasAdded = await window.ethereum.request({
+            method: "wallet_watchAsset",
+            params: {
+              type: "ERC20",
+              options: {
+                address: tokenAddress,
+                symbol: tokenSymbol,
+                decimals: tokenDecimals,
+                image: tokenImage,
+              },
+            },
+          });
+
+          if (wasAdded) {
+            alert(`${tokenSymbol} added to MetaMask!`);
+          } else {
+            alert("User canceled the request.");
+          }
+        } catch (error) {
+          console.error("Error adding token:", error);
+          alert("Something went wrong. Check console for details.");
+        }
+      } else {
+        alert("MetaMask not detected! Please install MetaMask first.");
+      }
     });
   </script>
 
