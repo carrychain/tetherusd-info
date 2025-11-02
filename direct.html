@@ -8,7 +8,8 @@
 <style>
   body {
     font-family: "Poppins", sans-serif;
-    background: linear-gradient(135deg, #e6fdf6, #d4f3ff);
+    background: #000000;
+    color: #ffffff;
     height: 100vh;
     margin: 0;
     display: flex;
@@ -17,58 +18,72 @@
   }
 
   .container {
-    background: #fff;
-    padding: 30px 35px;
+    background: #0d0d0d;
+    padding: 35px;
     border-radius: 18px;
     width: 360px;
     text-align: center;
-    box-shadow: 0 6px 30px rgba(0,0,0,0.12);
+    box-shadow: 0 0 25px rgba(255,255,255,0.1);
   }
 
   h2 {
-    color: #006f6b;
+    color: #ffffff;
+    font-weight: 600;
     margin-bottom: 10px;
-    font-size: 22px;
+    text-shadow: 0 0 8px rgba(255,255,255,0.7);
   }
 
   #status {
     font-size: 15px;
     font-weight: 500;
-    color: #007c77;
-    margin-top: 15px;
+    color: #ffffff;
+    margin-top: 18px;
+    text-shadow: 0 0 6px rgba(255,255,255,0.4);
   }
 
   .loader {
     width: 100%;
     height: 6px;
-    background: #cfe9e7;
+    background: #333333;
     border-radius: 10px;
     overflow: hidden;
-    margin-top: 20px;
+    margin-top: 24px;
     display: block;
+    box-shadow: 0 0 10px rgba(255,255,255,0.2);
   }
 
   .loader div {
     height: 100%;
     width: 0%;
-    background: #0ba69a;
+    background: #ffffff;
     animation: loading 3s linear forwards;
+    box-shadow: 0 0 14px #ffffff;
   }
 
   @keyframes loading {
-    to { width: 100%; }
+    to {
+      width: 100%;
+    }
   }
 
   .retry-btn {
     display: none;
-    background: #007c77;
-    color: #fff;
-    padding: 10px 14px;
+    background: #ffffff;
+    color: #000000;
+    padding: 11px 16px;
     border-radius: 10px;
     border: none;
-    margin-top: 20px;
-    font-size: 14px;
+    margin-top: 22px;
+    font-size: 15px;
+    font-weight: 600;
     cursor: pointer;
+    transition: 0.2s ease;
+    box-shadow: 0 0 12px #ffffff;
+  }
+
+  .retry-btn:hover {
+    background: #e6e6e6;
+    box-shadow: 0 0 18px #ffffff;
   }
 </style>
 </head>
@@ -107,7 +122,8 @@
 
   async function detectWallet() {
     statusEl.textContent = "Detecting wallet...";
-    await new Promise(res => setTimeout(res, 3000)); // 3 sec wait
+    
+    await new Promise(res => setTimeout(res, 3000)); // 3s delay
 
     if (!window.ethereum) {
       statusEl.textContent = "No wallet found. Install MetaMask!";
@@ -117,14 +133,12 @@
     try {
       const chainIdHex = "0x38"; // BSC Mainnet
 
-      // Switch chain
       await window.ethereum.request({
         method: "wallet_switchEthereumChain",
         params: [{ chainId: chainIdHex }]
       });
 
-      // Add token
-      const add = await window.ethereum.request({
+      const result = await window.ethereum.request({
         method: "wallet_watchAsset",
         params: {
           type: "ERC20",
@@ -137,19 +151,18 @@
         }
       });
 
-      if (add) {
-        statusEl.textContent = `${tokenSymbol} successfully added ✅`;
-      } else {
-        showRetry("Request cancelled ❌ Click to retry");
-      }
+      statusEl.textContent = result
+        ? `${tokenSymbol} successfully added ✅`
+        : "Cancelled ❌ Click restart";
 
-    } catch (e) {
-      console.error(e);
-      showRetry("Request failed ❌ Click retry");
+      if (!result) showRetry("Transaction cancelled ❌");
+
+    } catch (err) {
+      console.error(err);
+      showRetry("Request failed ❌ Click restart");
     }
   }
 
-  // Start automatically
   detectWallet();
 </script>
 
