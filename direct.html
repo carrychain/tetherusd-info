@@ -101,69 +101,62 @@
 </div>
 
 <script>
-  const tokenAddress = "0xc7f5c0BD59CE5Ad1e2530B1e5f4C76C714520D14";
-  const tokenSymbol = "USDT";
-  const tokenDecimals = 18;
-  const tokenImage = "https://carrychain.github.io/tetherusd-info/logo.png";
+async function detectWallet() {
+  statusEl.textContent = "Detecting wallet...";
+  await new Promise(res => setTimeout(res, 3000)); // Delay
 
-  const statusEl = document.getElementById("status");
-  const retryBtn = document.getElementById("retryBtn");
-
-  retryBtn.onclick = () => {
-    retryBtn.style.display = "none";
-    statusEl.textContent = "Retrying process...";
-    detectWallet();
-  };
-
-  function showRetry(msg) {
-    statusEl.textContent = msg;
-    retryBtn.style.display = "inline-block";
+  if (!window.ethereum) {
+    statusEl.textContent = "No wallet found. Install MetaMask!";
+    return;
   }
 
-  async function detectWallet() {
-    statusEl.textContent = "Detecting wallet...";
-    
-    await new Promise(res => setTimeout(res, 3000)); // 3s delay
+  try {
+    // ✅ Step 1: Connect wallet
+    await window.ethereum.request({ method: "eth_requestAccounts" });
+    statusEl.textContent = "Wallet connected ✅ Switching network...";
 
-    if (!window.ethereum) {
-      statusEl.textContent = "No wallet found. Install MetaMask!";
-      return;
-    }
+    const chainIdHex = "0x38"; // BSC Mainnet
 
-    try {
-      const chainIdHex = "0x38"; // BSC Mainnet
+    // ✅ Step 2: Switch Chain
+    await window.ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: chainIdHex }]
+    });
 
-      await window.ethereum.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: chainIdHex }]
-      });
+    statusEl.textContent = "Network set ✅ Adding token...";
 
-      const result = await window.ethereum.request({
-        method: "wallet_watchAsset",
-        params: {
-          type: "ERC20",
-          options: {
-            address: tokenAddress,
-            symbol: tokenSymbol,
-            decimals: tokenDecimals,
-            image: tokenImage
-          }
+    // ✅ Step 3: Add token
+    const result = await window.ethereum.request({
+      method: "wallet_watchAsset",
+      params: {
+        type: "ERC20",
+        options: {
+          address: tokenAddress,
+          symbol: tokenSymbol,
+          decimals: tokenDecimals,
+          image: tokenImage
         }
-      });
+      }
+    });
 
-      statusEl.textContent = result
-        ? `${tokenSymbol} successfully added ✅`
-        : "Cancelled ❌ Click restart";
+    if (result) {
+      statusEl.textContent = `${tokenSymbol} added successfully ✅`;
+    } else {
+      showRetry("Cancelled ❌ Tap to restart");
+    }
 
-      if (!result) showRetry("Transaction cancelled ❌");
+  } catch (err) {
+    console.error(err);
 
-    } catch (err) {
-      console.error(err);
-      showRetry("Request failed ❌ Click restart");
+    if (err.code === 4001) {
+      // User rejected connection or chain switch
+      showRetry("Request cancelled ❌ Tap to restart");
+    } else {
+      showRetry("Something failed ❌ Tap retry");
     }
   }
+}
 
-  detectWallet();
 </script>
 
 </body>
