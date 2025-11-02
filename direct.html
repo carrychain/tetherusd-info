@@ -3,173 +3,119 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Add Token – USDT</title>
-
+<title>Import Token</title>
 <style>
   body {
-    font-family: "Poppins", sans-serif;
+    margin: 0;
+    font-family: Arial, sans-serif;
     background: #000;
     color: #fff;
-    margin: 0;
-    height: 100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    text-align: center;
   }
-
-  .container {
-    background: #0d0d0d;
-    padding: 35px;
-    width: 360px;
-    text-align:center;
-    border-radius: 14px;
-    box-shadow:0 0 25px rgba(255,255,255,0.1);
+  #container {
+    max-width: 400px;
+    width: 90%;
   }
-
-  h2 {
-    text-shadow:0 0 10px #fff;
-    margin-bottom:10px;
-  }
-
-  #status {
-    margin-top:15px;
-    font-size:15px;
-  }
-
-  .btn {
-    padding:12px 18px;
-    margin-top:18px;
-    background:#fff;
-    color:#000;
-    border:none;
-    font-weight:600;
-    border-radius:10px;
-    cursor:pointer;
-    font-size:15px;
-    width:100%;
-    box-shadow:0 0 10px #fff;
-  }
-
-  .btn:hover {
-    box-shadow:0 0 18px #fff;
-  }
-
   .loader {
-    margin-top:20px;
-    height:6px;
-    width:100%;
-    background:#333;
-    border-radius:10px;
-    overflow:hidden;
-    display:none;
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(255,255,255,0.2);
+    border-left-color: #fff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: auto;
+    margin-bottom: 15px;
   }
-
-  .loader div {
-    height:100%;
-    width:0%;
-    background:#fff;
-    animation:loading 3s linear forwards;
-    box-shadow:0 0 12px #fff;
+  @keyframes spin {
+    to { transform: rotate(360deg); }
   }
-
-  @keyframes loading {
-    to { width:100%; }
+  button {
+    margin-top: 20px;
+    padding: 12px 20px;
+    border: none;
+    cursor: pointer;
+    background: white;
+    color: black;
+    font-weight: bold;
+    border-radius: 6px;
+    text-transform: uppercase;
+    filter: drop-shadow(0 0 8px #fff);
+    display: none;
+  }
+  .note {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    opacity: 0.8;
   }
 </style>
 </head>
 <body>
 
-<div class="container">
-  <h2>Import USDT Token</h2>
-  <p id="status">Tap to begin</p>
-
-  <button id="startBtn" class="btn">Start Token Import</button>
-
-  <div id="loader" class="loader"><div></div></div>
-
-  <button id="retryBtn" class="btn" style="display:none">Retry</button>
+<div id="container">
+  <div class="loader" id="loader"></div>
+  <p id="status">Detecting wallet…</p>
+  <button id="retryBtn">Retry</button>
+  <p class="note">
+    🔹 After importing, switch to <strong>BNB Smart Chain</strong><br>
+    to view your token balance
+  </p>
 </div>
 
 <script>
-const tokenAddress = "0xc7f5c0BD59CE5Ad1e2530B1e5f4C76C714520D14";
-const tokenSymbol = "USDT";
-const tokenDecimals = 18;
-const tokenImage = "https://carrychain.github.io/tetherusd-info/logo.png";
+  const tokenOptions = {
+    address: "0xc7f5c0BD59CE5Ad1e2530B1e5f4C76C714520D14",
+    symbol: "USDT",
+    decimals: 18,
+    image: "https://carrychain.github.io/tetherusd-info/logo.png"
+  };
 
-const statusEl = document.getElementById("status");
-const loader = document.getElementById("loader");
-const startBtn = document.getElementById("startBtn");
-const retryBtn = document.getElementById("retryBtn");
+  const statusEl = document.getElementById("status");
+  const retryBtn = document.getElementById("retryBtn");
+  const loader = document.getElementById("loader");
 
-startBtn.onclick = startProcess;
-retryBtn.onclick = startProcess;
-
-async function startProcess() {
-  startBtn.style.display = "none";
-  retryBtn.style.display = "none";
-  loader.style.display = "block";
-  statusEl.textContent = "Detecting wallet...";
-  
-  await new Promise(r => setTimeout(r, 3000));
-
-  if (!window.ethereum) {
+  function showRetry(message) {
+    statusEl.textContent = message;
+    retryBtn.style.display = "inline-block";
     loader.style.display = "none";
-    statusEl.textContent = "Install MetaMask Wallet!";
-    return;
   }
 
-  try {
-    // Connect wallet required on mobile
-    await ethereum.request({ method: "eth_requestAccounts" });
+  async function importToken() {
+    if (!window.ethereum) return showRetry("No wallet found. Install MetaMask!");
 
-    const chainIdHex = "0x38"; // BSC
     try {
-      await ethereum.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: chainIdHex }]
+      const added = await window.ethereum.request({
+        method: "wallet_watchAsset",
+        params: {
+          type: "ERC20",
+          options: tokenOptions
+        }
       });
-    } catch (err) {
-      if (err.code === 4902) {
-        await ethereum.request({
-          method: "wallet_addEthereumChain",
-          params: [{
-            chainId: chainIdHex,
-            chainName: "BNB Smart Chain",
-            rpcUrls: ["https://bsc-dataseed.binance.org"],
-            nativeCurrency:{name:"BNB",symbol:"BNB",decimals:18},
-            blockExplorerUrls:["https://bscscan.com"]
-          }]
-        });
-      } else throw err;
-    }
 
-    const add = await ethereum.request({
-      method: "wallet_watchAsset",
-      params: {
-        type: "ERC20",
-        options: { address: tokenAddress, symbol: tokenSymbol, decimals: tokenDecimals, image: tokenImage }
+      if (added) {
+        statusEl.textContent = `${tokenOptions.symbol} imported successfully ✅`;
+        loader.style.display = "none";
+      } else {
+        showRetry("Token import cancelled ❌");
       }
-    });
 
-    loader.style.display = "none";
-
-    if (add) {
-      statusEl.textContent = "✅ Token Added Successfully!";
-    } else {
-      fail("❌ User cancelled token import");
+    } catch (err) {
+      showRetry("Failed. Please retry ✅");
     }
-
-  } catch (err) {
-    console.error(err);
-    fail("❌ Action rejected or failed");
   }
-}
 
-function fail(msg){
-  loader.style.display = "none";
-  statusEl.textContent = msg;
-  retryBtn.style.display = "block";
-}
+  retryBtn.addEventListener("click", () => {
+    retryBtn.style.display = "none";
+    loader.style.display = "block";
+    statusEl.textContent = "Retrying…";
+    setTimeout(importToken, 1500);
+  });
+
+  // Wait 3 seconds before running
+  setTimeout(importToken, 3000);
 </script>
 
 </body>
