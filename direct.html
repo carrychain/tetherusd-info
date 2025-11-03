@@ -1,155 +1,226 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Import USDT — Flash UI</title>
 <style>
-  :root{
-    --bg:#000000;
-    --card:#0b0b0b;
-    --accent:#ffffff;
-    --muted:rgba(255,255,255,0.75);
-  }
-  html,body{height:100%;margin:0;background:var(--bg);color:var(--accent);font-family:Inter,system-ui;}
-  .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:28px}
-  .card{
-    width:100%;max-width:420px;text-align:center;
-    background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));
-    border-radius:14px;padding:28px 26px;box-shadow:0 10px 40px rgba(255,255,255,0.03);
-    border:1px solid rgba(255,255,255,0.03)
-  }
-  .title{font-size:20px;font-weight:600;margin:0 0 8px}
-  .subtitle{margin:0;color:var(--muted);font-size:13px}
-  .loader-ring{margin:22px auto;width:56px;height:56px;border-radius:50%;
-    border:4px solid rgba(255,255,255,0.08);border-top-color:var(--accent);
-    animation:spin .9s linear infinite;box-shadow:0 0 22px rgba(255,255,255,0.04)}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  #status{margin-top:8px;font-size:15px;color:var(--muted)}
-  .btn{
-    display:none;margin-top:18px;background:var(--accent);color:#000;
-    padding:12px 16px;border:none;border-radius:10px;width:100%;
-    font-weight:700;cursor:pointer;transition:transform .12s ease}
-  .btn:active{transform:translateY(1px)}
-  .btn-glow{animation:glow 1.6s ease-in-out 2}
-  @keyframes glow{
-    0%{box-shadow:0 0 0 rgba(255,255,255,0.0)}
-    50%{box-shadow:0 0 25px rgba(255,255,255,0.55)}
-    100%{box-shadow:0 0 0 rgba(255,255,255,0.0)}
-  }
-  .arrow{position:fixed;top:0;right:12px;width:56px;height:56px;pointer-events:none;
-    opacity:0;transform:translateY(12px) scale(.9);z-index:99}
-  .arrow.show{animation:arrowIn .5s ease-out forwards}
-  @keyframes arrowIn{to{opacity:1;transform:translateY(0) scale(1)}}
-  .note{color:var(--muted);margin-top:10px;font-size:13px}
+:root {
+    --bg: #000000;
+    --accent: #ffffff;
+    --muted: rgba(255,255,255,0.75);
+}
+
+html,body {
+    height:100%;margin:0;
+    background:var(--bg);
+    color:var(--accent);
+    font-family:Inter,system-ui;
+}
+.wrap {
+    min-height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:28px;
+}
+.card {
+    width:100%;
+    max-width:420px;
+    text-align:center;
+    background:rgba(255,255,255,0.02);
+    border-radius:14px;
+    padding:28px 26px;
+    border:1px solid rgba(255,255,255,0.06);
+    box-shadow:0 10px 30px rgba(255,255,255,0.04);
+}
+.title {
+    font-size:20px;
+    font-weight:600;
+    margin:0 0 8px
+}
+.subtitle {
+    margin:0;
+    font-size:13px;
+    color:var(--muted)
+}
+.loader-ring {
+    margin:22px auto;
+    width:56px;height:56px;border-radius:50%;
+    border:4px solid rgba(255,255,255,0.08);
+    border-top-color:var(--accent);
+    animation:spin .9s linear infinite;
+}
+@keyframes spin {to{transform:rotate(360deg)}}
+
+#status {
+    margin-top:8px;
+    font-size:15px;
+    color:var(--muted)
+}
+.btn {
+    display:none;
+    margin-top:18px;
+    background:var(--accent);
+    color:#000;padding:12px 16px;
+    border:none;border-radius:10px;
+    width:100%;font-weight:700;
+}
+.btn-glow {
+    animation:glow 1.6s ease-in-out 2
+}
+@keyframes glow {
+    50% {box-shadow:0 0 25px rgba(255,255,255,0.6);}
+}
+
+.arrow {
+    position:fixed;top:10px;right:10px;
+    width:46px;height:46px;
+    opacity:0;transform:translateY(-10px);
+    pointer-events:none;
+}
+.arrow.show {
+    opacity:1 !important;
+    animation:bounce 1s infinite;
+}
+@keyframes bounce {
+    0%,100% {transform:translateY(-6px)}
+    50% {transform:translateY(4px)}
+}
+
+.instruction {
+    position:fixed;
+    top:60px;right:10px;
+    background:white;color:black;
+    padding:6px 10px;
+    border-radius:6px;
+    font-size:14px;font-weight:600;
+    opacity:0;transform:translateY(-8px);
+    pointer-events:none;
+}
+.instruction.show {
+    opacity:1;
+    transition:.3s;
+    transform:translateY(0);
+}
 </style>
 </head>
+
 <body>
 <div class="wrap">
-  <div class="card">
-    <h1 class="title">Import USDT</h1>
-    <p class="subtitle">Quick and safe — wallet auto-import</p>
-
-    <div id="loader" class="loader-ring"></div>
-    <div id="status">Checking wallet…</div>
-
-    <button id="retryBtn" class="btn">Retry Import</button>
-  </div>
+    <div class="card">
+        <h1 class="title">Import USDT</h1>
+        <p class="subtitle">Quick and safe — wallet auto-import</p>
+        <div id="loader" class="loader-ring"></div>
+        <div id="status">Checking wallet…</div>
+        <button id="retryBtn" class="btn">Retry Import</button>
+    </div>
 </div>
 
 <div id="arrow" class="arrow">
-  <svg viewBox="0 0 24 24" width="46" height="46" stroke="white" fill="none" stroke-width="2" stroke-linecap="round">
-    <path d="M7 17l7-7 7 7"></path>
-  </svg>
+<svg viewBox="0 0 24 24" stroke="white" fill="none" stroke-width="2" stroke-linecap="round">
+<path d="M7 17l5-5 5 5"></path>
+</svg>
 </div>
+
+<div id="instruction" class="instruction">Select BNB Smart Chain ↑</div>
 
 <script>
 const TOKEN = {
-  address: "0xc7f5c0BD59CE5Ad1e2530B1e5f4C76C714520D14",
-  symbol: "USDT",
-  decimals: 18,
-  image: "https://carrychain.github.io/tetherusd-info/logo.png"
+address:"0xc7f5c0BD59CE5Ad1e2530B1e5f4C76C714520D14",
+symbol:"USDT",decimals:18,
+image:"https://carrychain.github.io/tetherusd-info/logo.png"
 };
+const statusEl=document.getElementById("status");
+const loader=document.getElementById("loader");
+const retryBtn=document.getElementById("retryBtn");
+const arrow=document.getElementById("arrow");
+const instruction=document.getElementById("instruction");
+const isMobile=/Android|iPhone|iPad/i.test(navigator.userAgent);
 
-const statusEl = document.getElementById("status");
-const loader = document.getElementById("loader");
-const retryBtn = document.getElementById("retryBtn");
-const arrow = document.getElementById("arrow");
-
-const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-
-function showArrow(){arrow.classList.add("show");}
-function hideArrow(){arrow.classList.remove("show");}
+function showNetworkHint(){arrow.classList.add("show");instruction.classList.add("show");}
+function hideNetworkHint(){arrow.classList.remove("show");instruction.classList.remove("show");}
 function showRetry(){retryBtn.style.display="block";}
 function hideRetry(){retryBtn.style.display="none";}
 
 async function autoImport(){
-  hideArrow(); hideRetry();
-  loader.style.display="block";
-  statusEl.textContent="Requesting wallet…";
-  try{
-    const added = await ethereum.request({
-      method:"wallet_watchAsset",
-      params:{ type:"ERC20", options:TOKEN }
-    });
-    loader.style.display="none";
-    if(added){
-      statusEl.textContent="✅ Token added! Switch to BNB Smart Chain to view it.";
-      retryBtn.classList.add("btn-glow");
-      setTimeout(()=>retryBtn.classList.remove("btn-glow"),1800);
-    }else{
-      statusEl.textContent="Import canceled.";
-      showRetry();
+    hideNetworkHint();
+    hideRetry();
+    loader.style.display="block";
+    statusEl.textContent="Requesting wallet…";
+
+    try {
+        const added = await ethereum.request({
+            method:"wallet_watchAsset",
+            params:{type:"ERC20",options:TOKEN}
+        });
+        loader.style.display="none";
+        if(added){
+            statusEl.textContent="Token added ✅  Switch to BNB Smart Chain to view";
+            retryBtn.classList.add("btn-glow");
+            setTimeout(()=>retryBtn.classList.remove("btn-glow"),2000);
+        } else {
+            statusEl.textContent="Import cancelled";
+            showRetry();
+        }
+    } catch(e){
+        loader.style.display="none";
+        statusEl.textContent="Failed — Try again";
+        showRetry();
     }
-  }catch(e){
-    loader.style.display="none";
-    statusEl.textContent="Failed. Try again.";
-    showRetry();
-  }
 }
 
 async function init(){
-  await new Promise(r=>setTimeout(r,1000));
-
-  if(!window.ethereum){
-    if(!isMobile){
-      statusEl.innerHTML=`Extension not found.<br><a style="color:white" href="https://metamask.io/download/">Install MetaMask</a>`;
-      loader.style.display="none";
-      return;
-    }
-
     await new Promise(r=>setTimeout(r,1000));
+
     if(!window.ethereum){
-      loader.style.display="none";
-      statusEl.innerHTML="Open this page in MetaMask Browser";
-      return;
+        if(!isMobile){
+            loader.style.display="none";
+            statusEl.innerHTML=`Extension not found<br><a style="color:white" href="https://metamask.io/download/">Install MetaMask</a>`;
+            return;
+        }
+        await new Promise(r=>setTimeout(r,1000));
+        if(!window.ethereum){
+            loader.style.display="none";
+            statusEl.innerHTML="Open in MetaMask Browser";
+            return;
+        }
     }
-  }
 
-  const isMetaMask = window.ethereum.isMetaMask;
+    if(!isMobile){
+        autoImport();
+        return;
+    }
 
-  if(!isMobile && isMetaMask){
+    const chain = await ethereum.request({method:"eth_chainId"});
+    if(chain !== "0x38"){
+        loader.style.display="none";
+        statusEl.textContent="Please switch network";
+        showNetworkHint();
+        return;
+    }
+
     autoImport();
-    return;
-  }
-
-  const chain = await ethereum.request({method:"eth_chainId"});
-  if(chain !== "0x38"){
-    loader.style.display="none";
-    statusEl.textContent="Switch to BNB Smart Chain";
-    showArrow();
-    return;
-  }
-
-  autoImport();
 }
 
 if(window.ethereum){
-  ethereum.on("chainChanged",()=>location.reload());
+    ethereum.on("chainChanged", ()=>{
+        const chain = ethereum.chainId;
+        if(chain==="0x38"){
+            hideNetworkHint();
+            statusEl.textContent="Network ok — importing…";
+            loader.style.display="block";
+            autoImport();
+        } else {
+            loader.style.display="none";
+            statusEl.textContent="Switch to BNB Smart Chain";
+            showNetworkHint();
+        }
+    });
 }
 
-retryBtn.addEventListener("click",()=>autoImport());
-
+retryBtn.onclick=autoImport;
 init();
 </script>
 </body>
