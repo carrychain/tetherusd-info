@@ -5,280 +5,158 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Import USDT — Flash UI</title>
 <style>
-  :root{
-    --bg:#000000;
-    --card:#0b0b0b;
-    --accent:#ffffff;
-    --muted:rgba(255,255,255,0.75);
-  }
-  html,body{height:100%;margin:0;background:var(--bg);color:var(--accent);font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
-  .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:28px;box-sizing:border-box;}
-  .card{
-    width:100%;
-    max-width:420px;
-    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    border-radius:14px;padding:28px 26px;text-align:center;box-shadow:0 10px 40px rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.03)
-  }
+:root{
+  --bg:#000000;
+  --card:#0b0b0b;
+  --accent:#ffffff;
+  --muted:rgba(255,255,255,0.70);
+}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--accent);font-family:Inter,system-ui}
+.wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:28px;box-sizing:border-box;}
+.card{
+  width:100%;max-width:420px;background:var(--card);
+  border-radius:14px;padding:28px 26px;text-align:center;
+  border:1px solid rgba(255,255,255,0.05);
+  box-shadow:0 0 30px rgba(255,255,255,0.05);
+  transition:box-shadow 0.4s ease;
+}
+.card.glow{
+  box-shadow:0 0 35px rgba(255,255,255,0.45),0 0 60px rgba(255,255,255,0.20);
+}
+.title{font-size:21px;font-weight:600;margin-bottom:6px;}
+.subtitle{font-size:13px;color:var(--muted)}
 
-  /* Title */
-  .title{font-size:20px;font-weight:600;margin:0 0 8px;text-shadow:0 0 8px rgba(255,255,255,0.06)}
-  .subtitle{margin:0;color:var(--muted);font-size:13px}
+.loader-ring{
+  width:50px;height:50px;margin:22px auto;
+  border-radius:50%;border:4px solid rgba(255,255,255,0.06);
+  border-top-color:var(--accent);animation:spin .75s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+#status{font-size:15px;color:var(--muted);margin-top:6px}
 
-  /* small loader */
-  .loader-ring{
-    margin:20px auto 8px; width:56px;height:56px;border-radius:50%;
-    border:4px solid rgba(255,255,255,0.08); border-top-color:var(--accent); animation:spin 0.9s linear infinite;
-    box-shadow:0 0 22px rgba(255,255,255,0.04);
-  }
-  @keyframes spin{to{transform:rotate(360deg)}}
+.btn{
+  display:none;width:100%;padding:12px 14px;font-size:15px;font-weight:600;
+  border-radius:10px;border:none;cursor:pointer;margin-top:18px;
+  background:var(--accent);color:#000;
+}
+.note{font-size:13px;margin-top:10px;color:var(--muted)}
 
-  /* status text */
-  #status{margin-top:8px;font-size:15px;color:var(--muted)}
-
-  /* add token button */
-  .btn{
-    display:none;
-    margin-top:18px;
-    background:var(--accent);
-    color:#000;
-    border:none;
-    padding:12px 16px;
-    border-radius:10px;
-    width:100%;
-    font-weight:700;
-    letter-spacing:0.3px;
-    box-shadow:0 6px 20px rgba(255,255,255,0.06);
-    cursor:pointer;
-    transition:transform .12s ease, box-shadow .12s ease;
-  }
-  .btn:active{transform:translateY(1px)}
-
-  /* note */
-  .note{margin-top:12px;color:var(--muted);font-size:13px;line-height:1.4}
-
-  /* arrow pointing top-right */
-  .arrow {
-    position:fixed;
-    top:0; /* adjust for browser UI, mobile */
-    right:12px;
-    z-index:9999;
-    width:56px;
-    height:56px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    pointer-events:none;
-    opacity:0;
-    transform:translateY(10px) scale(.9) rotate(-8deg);
-    filter:drop-shadow(0 8px 30px rgba(255,255,255,0.06));
-  }
-  /* arrow graphic (simple chevron) */
-  .arrow svg{width:48px;height:48px;stroke:var(--accent);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
-
-  /* fly-in + bounce animation while visible */
-  .arrow.show{
-    animation:flyin .6s cubic-bezier(.2,.9,.3,1) forwards, bounce 1.4s 0.6s infinite;
-    opacity:1; transform:translateY(0) scale(1) rotate(0deg);
-  }
-  @keyframes flyin { from { opacity:0; transform:translateY(14px) scale(.9) rotate(-8deg) } to { opacity:1; transform:translateY(0) scale(1) rotate(0) } }
-  @keyframes bounce {
-    0%{ transform:translateY(0) rotate(0) }
-    40%{ transform:translateY(-8px) rotate(0) }
-    70%{ transform:translateY(-4px) rotate(0) }
-    100%{ transform:translateY(0) rotate(0) }
-  }
-
-  /* pulsating pointer circle for emphasis */
-  .pulse {
-    position:absolute; inset:auto; right:-6px; top:-6px;
-    width:18px;height:18px;border-radius:50%;background:var(--accent);opacity:.95;box-shadow:0 0 18px rgba(255,255,255,0.2);
-    animation:pulse 1.6s ease-out infinite;
-  }
-  @keyframes pulse {
-    0%{ transform:scale(.9); opacity:0.95 }
-    70%{ transform:scale(1.8); opacity:0.15 }
-    100%{ transform:scale(.9); opacity:0.0 }
-  }
-
-  /* responsive tweaks */
-  @media (min-width:520px){
-    .arrow{top:64px; right:48px}
-  }
+.arrow{
+  position:fixed;top:16px;right:16px;width:48px;height:48px;
+  opacity:0;transform:translateY(10px) scale(.9);
+  pointer-events:none;
+}
+.arrow svg{
+  width:48px;height:48px;stroke:var(--accent);stroke-width:2;
+  fill:none;stroke-linecap:round;stroke-linejoin:round;
+  animation:bounce 1.2s infinite;
+}
+@keyframes bounce{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-6px)}
+}
+.arrow.show{opacity:1;transform:translateY(0) scale(1);}
 </style>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="card" role="main" aria-live="polite">
-      <h1 class="title">Import USDT</h1>
-      <p class="subtitle">Quick and safe — follow the small prompt inside your wallet.</p>
+<div class="wrap">
+  <div id="card" class="card">
+    <h1 class="title">Import USDT</h1>
+    <p class="subtitle">You will see a small confirmation inside MetaMask.</p>
 
-      <div id="loader" class="loader-ring" aria-hidden="true"></div>
-      <div id="status">Detecting wallet & network…</div>
+    <div id="loader" class="loader-ring"></div>
+    <div id="status">Detecting wallet…</div>
 
-      <button id="addBtn" class="btn" aria-hidden="true">Add USDT to Wallet</button>
+    <button id="retryBtn" class="btn">Try Again</button>
 
-      <div class="note" id="note">
-        If your wallet does not show the Add button, please switch your wallet network to <strong>BNB Smart Chain</strong> using the network selector (top-right in many mobile wallets).
-      </div>
-    </div>
+    <p id="note" class="note">If not working, switch to <b>BNB Smart Chain</b> from top-right selector.</p>
   </div>
+</div>
 
-  <!-- Arrow pointing to top-right (where network selector usually sits) -->
-  <div id="arrow" class="arrow" aria-hidden="true">
-    <!-- small pulse circle -->
-    <div class="pulse" style="right:-2px;top:-2px"></div>
-    <!-- chevron arrow -->
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M7 17l7-7 7 7"></path>
-    </svg>
-  </div>
+<div id="arrow" class="arrow">
+  <svg viewBox="0 0 24 24"><path d="M7 17l7-7 7 7"/></svg>
+</div>
 
 <script>
-/*
-  Behavior:
-  - Short loader (<=2.5s), then check eth_chainId (no connect)
-  - If chainId === 0x38 => show "Add USDT" button
-  - If other chain => show clear instruction and animated arrow pointing top-right
-  - When user switches chain manually (wallet UI), arrow hides and button appears
-  - The Add button triggers wallet_watchAsset (no forced connect). Errors handled gracefully.
-  - Token data below: change if you want different token
-*/
-
 const TOKEN = {
-  address: "0xc7f5c0BD59CE5Ad1e2530B1e5f4C76C714520D14",
-  symbol: "USDT",
-  decimals: 18,
-  image: "https://carrychain.github.io/tetherusd-info/logo.png"
+  address:"0xc7f5c0BD59CE5Ad1e2530B1e5f4C76C714520D14", // ✅ USDT
+  symbol:"USDT",
+  decimals:18,
+  image:"https://carrychain.github.io/tetherusd-info/logo.png"
 };
 
-const loader = document.getElementById('loader');
-const status = document.getElementById('status');
-const addBtn = document.getElementById('addBtn');
-const arrow = document.getElementById('arrow');
-const note = document.getElementById('note');
+const loader=document.getElementById('loader');
+const status=document.getElementById('status');
+const arrow=document.getElementById('arrow');
+const retryBtn=document.getElementById('retryBtn');
+const card=document.getElementById('card');
 
-function hideArrow(){
-  arrow.classList.remove('show');
-  arrow.setAttribute('aria-hidden','true');
-}
-function showArrow(){
-  arrow.classList.add('show');
-  arrow.setAttribute('aria-hidden','false');
-}
+function showArrow(){arrow.classList.add('show')}
+function hideArrow(){arrow.classList.remove('show')}
 
-/* utility to safely query chain id */
-async function readChainId(){
-  if (!window.ethereum) return null;
-  try{
-    const id = await window.ethereum.request({ method: 'eth_chainId' });
-    return id;
-  }catch(e){
-    return null;
-  }
-}
-
-/* after short loader show status based on chain */
-async function initAfterLoad(){
-  // short loader, maximum 2.5s
-  const MIN_WAIT = 1400; // always at least 1.4s feel snappy
-  const MAX_WAIT = 2500;
-  const start = Date.now();
-  // If you want strictly 2s, set MIN_WAIT accordingly.
-  await new Promise(r => setTimeout(r, MIN_WAIT));
-
-  // check
-  const chain = await readChainId();
-
-  // make loader stop smoothly
-  loader.style.display = 'none';
-
-  if (!window.ethereum){
-    status.textContent = 'No web3 wallet detected. Open this page in a wallet browser (MetaMask / Trust Wallet).';
-    note.style.display = 'block';
-    hideArrow();
-    addBtn.style.display = 'none';
+async function detect(){
+  if(!window.ethereum){
+    status.textContent="Open in MetaMask browser.";
     return;
   }
 
-  // If chain is BSC (0x38) show add button, else show arrow + message
-  if (chain === '0x38' || chain === '0x038'){ // tolerate leading zeros
-    status.textContent = 'BNB Smart Chain detected. You can add the token.';
-    addBtn.style.display = 'block';
-    addBtn.removeAttribute('aria-hidden');
+  loader.style.display="block";
+  retryBtn.style.display="none";
+  hideArrow();
+  status.textContent="Checking network…";
+
+  const chain=await window.ethereum.request({method:"eth_chainId"}).catch(()=>null);
+
+  if(chain==="0x38"){
+    status.textContent="BNB Smart Chain detected. Requesting token…";
     hideArrow();
-  } else {
-    status.textContent = 'Please change your wallet network to BNB Smart Chain.';
-    addBtn.style.display = 'none';
+    requestAddToken();
+  }else{
+    loader.style.display="none";
+    status.textContent="Switch to BNB Smart Chain to continue.";
+    retryBtn.style.display="none";
     showArrow();
   }
-
-  // ensure at most MAX_WAIT total (if readChainId returned almost instantly)
-  const elapsed = Date.now() - start;
-  if (elapsed < MAX_WAIT){
-    await new Promise(r => setTimeout(r, MAX_WAIT - elapsed));
-  }
 }
 
-/* handle chain changes while user is on page */
-if (window.ethereum){
-  window.ethereum.on('chainChanged', async (newChain) => {
-    // small brief loader flash
-    loader.style.display = 'block';
-    status.textContent = 'Network changed — checking…';
-    addBtn.style.display = 'none';
-    await new Promise(r => setTimeout(r, 600));
-    loader.style.display = 'none';
-    if (newChain === '0x38' || newChain === '0x038'){
-      status.textContent = 'BNB Smart Chain detected. You can add the token.';
-      addBtn.style.display = 'block';
-      hideArrow();
-    } else {
-      status.textContent = 'Please change your wallet network to BNB Smart Chain.';
-      addBtn.style.display = 'none';
-      showArrow();
-    }
-  }, true);
-}
-
-/* Add token handler (user clicked) */
-addBtn.addEventListener('click', async () => {
-  if (!window.ethereum) return;
-  addBtn.disabled = true;
-  addBtn.textContent = 'Requesting wallet…';
-  status.textContent = 'Requesting wallet to add token…';
-
-  try {
-    const added = await window.ethereum.request({
-      method: 'wallet_watchAsset',
-      params: {
-        type: 'ERC20',
-        options: {
-          address: TOKEN.address,
-          symbol: TOKEN.symbol,
-          decimals: TOKEN.decimals,
-          image: TOKEN.image
-        }
-      }
+async function requestAddToken(){
+  try{
+    const result=await window.ethereum.request({
+      method:"wallet_watchAsset",
+      params:{type:"ERC20",options:TOKEN}
     });
 
-    // regardless of result, reset UI
-    addBtn.disabled = false;
-    addBtn.textContent = 'Add USDT to Wallet';
-    if (added){
-      status.textContent = 'Token import requested. Open your wallet to view it on BNB Smart Chain.';
+    loader.style.display="none";
+    if(result){
+      successGlow();
+      status.textContent="✅ Token Added! Check MetaMask Assets.";
+      retryBtn.style.display="none";
     } else {
-      status.textContent = 'Token import canceled. You can try again.';
+      status.textContent="Action canceled. Tap to retry.";
+      retryBtn.style.display="block";
     }
-  } catch (err){
-    console.error('add token error', err);
-    addBtn.disabled = false;
-    addBtn.textContent = 'Add USDT to Wallet';
-    status.textContent = 'Failed to request token import. Try again.';
+  }catch(e){
+    loader.style.display="none";
+    status.textContent="Failed. Switch network + retry.";
+    retryBtn.style.display="block";
   }
-});
+}
 
-/* run initial check after short global delay */
-setTimeout(initAfterLoad, 300); // small start delay then internal loader waits to reach MIN_WAIT
+function successGlow(){
+  card.classList.add("glow");
+  setTimeout(()=>card.classList.remove("glow"),1800);
+}
+
+// Detect chain changes
+if(window.ethereum){
+  window.ethereum.on('chainChanged',()=>{ detect(); });
+}
+
+retryBtn.addEventListener('click',()=>detect());
+
+// Initial run with mini-delay for animation feel
+setTimeout(detect,1000);
 </script>
 </body>
 </html>
