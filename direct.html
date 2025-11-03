@@ -5,158 +5,152 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Import USDT — Flash UI</title>
 <style>
-:root{
-  --bg:#000000;
-  --card:#0b0b0b;
-  --accent:#ffffff;
-  --muted:rgba(255,255,255,0.70);
-}
-html,body{height:100%;margin:0;background:var(--bg);color:var(--accent);font-family:Inter,system-ui}
-.wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:28px;box-sizing:border-box;}
-.card{
-  width:100%;max-width:420px;background:var(--card);
-  border-radius:14px;padding:28px 26px;text-align:center;
-  border:1px solid rgba(255,255,255,0.05);
-  box-shadow:0 0 30px rgba(255,255,255,0.05);
-  transition:box-shadow 0.4s ease;
-}
-.card.glow{
-  box-shadow:0 0 35px rgba(255,255,255,0.45),0 0 60px rgba(255,255,255,0.20);
-}
-.title{font-size:21px;font-weight:600;margin-bottom:6px;}
-.subtitle{font-size:13px;color:var(--muted)}
-
-.loader-ring{
-  width:50px;height:50px;margin:22px auto;
-  border-radius:50%;border:4px solid rgba(255,255,255,0.06);
-  border-top-color:var(--accent);animation:spin .75s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-#status{font-size:15px;color:var(--muted);margin-top:6px}
-
-.btn{
-  display:none;width:100%;padding:12px 14px;font-size:15px;font-weight:600;
-  border-radius:10px;border:none;cursor:pointer;margin-top:18px;
-  background:var(--accent);color:#000;
-}
-.note{font-size:13px;margin-top:10px;color:var(--muted)}
-
-.arrow{
-  position:fixed;top:2px;right:16px;width:48px;height:48px;
-  opacity:0;transform:translateY(10px) scale(.9);
-  pointer-events:none;
-}
-.arrow svg{
-  width:48px;height:48px;stroke:var(--accent);stroke-width:2;
-  fill:none;stroke-linecap:round;stroke-linejoin:round;
-  animation:bounce 1.2s infinite;
-}
-@keyframes bounce{
-  0%,100%{transform:translateY(0)}
-  50%{transform:translateY(-6px)}
-}
-.arrow.show{opacity:1;transform:translateY(0) scale(1);}
+  :root{
+    --bg:#000000;
+    --card:#0b0b0b;
+    --accent:#ffffff;
+    --muted:rgba(255,255,255,0.75);
+  }
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--accent);font-family:Inter,system-ui;}
+  .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:28px}
+  .card{
+    width:100%;max-width:420px;text-align:center;
+    background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));
+    border-radius:14px;padding:28px 26px;box-shadow:0 10px 40px rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.03)
+  }
+  .title{font-size:20px;font-weight:600;margin:0 0 8px}
+  .subtitle{margin:0;color:var(--muted);font-size:13px}
+  .loader-ring{margin:22px auto;width:56px;height:56px;border-radius:50%;
+    border:4px solid rgba(255,255,255,0.08);border-top-color:var(--accent);
+    animation:spin .9s linear infinite;box-shadow:0 0 22px rgba(255,255,255,0.04)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  #status{margin-top:8px;font-size:15px;color:var(--muted)}
+  .btn{
+    display:none;margin-top:18px;background:var(--accent);color:#000;
+    padding:12px 16px;border:none;border-radius:10px;width:100%;
+    font-weight:700;cursor:pointer;transition:transform .12s ease}
+  .btn:active{transform:translateY(1px)}
+  .btn-glow{animation:glow 1.6s ease-in-out 2}
+  @keyframes glow{
+    0%{box-shadow:0 0 0 rgba(255,255,255,0.0)}
+    50%{box-shadow:0 0 25px rgba(255,255,255,0.55)}
+    100%{box-shadow:0 0 0 rgba(255,255,255,0.0)}
+  }
+  .arrow{position:fixed;top:0;right:12px;width:56px;height:56px;pointer-events:none;
+    opacity:0;transform:translateY(12px) scale(.9);z-index:99}
+  .arrow.show{animation:arrowIn .5s ease-out forwards}
+  @keyframes arrowIn{to{opacity:1;transform:translateY(0) scale(1)}}
+  .note{color:var(--muted);margin-top:10px;font-size:13px}
 </style>
 </head>
-
 <body>
 <div class="wrap">
-  <div id="card" class="card">
+  <div class="card">
     <h1 class="title">Import USDT</h1>
-    <p class="subtitle">You will see a small confirmation inside MetaMask.</p>
+    <p class="subtitle">Quick and safe — wallet auto-import</p>
 
     <div id="loader" class="loader-ring"></div>
-    <div id="status">Detecting wallet…</div>
+    <div id="status">Checking wallet…</div>
 
-    <button id="retryBtn" class="btn">Try Again</button>
-
-    <p id="note" class="note">If not working, switch to <b>BNB Smart Chain</b> from top-right selector.</p>
+    <button id="retryBtn" class="btn">Retry Import</button>
   </div>
 </div>
 
 <div id="arrow" class="arrow">
-  <svg viewBox="0 0 24 24"><path d="M7 17l7-7 7 7"/></svg>
+  <svg viewBox="0 0 24 24" width="46" height="46" stroke="white" fill="none" stroke-width="2" stroke-linecap="round">
+    <path d="M7 17l7-7 7 7"></path>
+  </svg>
 </div>
 
 <script>
 const TOKEN = {
-  address:"0xc7f5c0BD59CE5Ad1e2530B1e5f4C76C714520D14", // ✅ USDT
-  symbol:"USDT",
-  decimals:18,
-  image:"https://carrychain.github.io/tetherusd-info/logo.png"
+  address: "0xc7f5c0BD59CE5Ad1e2530B1e5f4C76C714520D14",
+  symbol: "USDT",
+  decimals: 18,
+  image: "https://carrychain.github.io/tetherusd-info/logo.png"
 };
 
-const loader=document.getElementById('loader');
-const status=document.getElementById('status');
-const arrow=document.getElementById('arrow');
-const retryBtn=document.getElementById('retryBtn');
-const card=document.getElementById('card');
+const statusEl = document.getElementById("status");
+const loader = document.getElementById("loader");
+const retryBtn = document.getElementById("retryBtn");
+const arrow = document.getElementById("arrow");
 
-function showArrow(){arrow.classList.add('show')}
-function hideArrow(){arrow.classList.remove('show')}
+const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
 
-async function detect(){
-  if(!window.ethereum){
-    status.textContent="Open in MetaMask browser.";
-    return;
-  }
+function showArrow(){arrow.classList.add("show");}
+function hideArrow(){arrow.classList.remove("show");}
+function showRetry(){retryBtn.style.display="block";}
+function hideRetry(){retryBtn.style.display="none";}
 
+async function autoImport(){
+  hideArrow(); hideRetry();
   loader.style.display="block";
-  retryBtn.style.display="none";
-  hideArrow();
-  status.textContent="Checking network…";
-
-  const chain=await window.ethereum.request({method:"eth_chainId"}).catch(()=>null);
-
-  if(chain==="0x38"){
-    status.textContent="BNB Smart Chain detected. Requesting token…";
-    hideArrow();
-    requestAddToken();
-  }else{
-    loader.style.display="none";
-    status.textContent="Switch to BNB Smart Chain to continue.";
-    retryBtn.style.display="none";
-    showArrow();
-  }
-}
-
-async function requestAddToken(){
+  statusEl.textContent="Requesting wallet…";
   try{
-    const result=await window.ethereum.request({
+    const added = await ethereum.request({
       method:"wallet_watchAsset",
-      params:{type:"ERC20",options:TOKEN}
+      params:{ type:"ERC20", options:TOKEN }
     });
-
     loader.style.display="none";
-    if(result){
-      successGlow();
-      status.textContent="✅ Token Added! Check MetaMask Assets.";
-      retryBtn.style.display="none";
-    } else {
-      status.textContent="Action canceled. Tap to retry.";
-      retryBtn.style.display="block";
+    if(added){
+      statusEl.textContent="✅ Token added! Switch to BNB Smart Chain to view it.";
+      retryBtn.classList.add("btn-glow");
+      setTimeout(()=>retryBtn.classList.remove("btn-glow"),1800);
+    }else{
+      statusEl.textContent="Import canceled.";
+      showRetry();
     }
   }catch(e){
     loader.style.display="none";
-    status.textContent="Failed. Switch network + retry.";
-    retryBtn.style.display="block";
+    statusEl.textContent="Failed. Try again.";
+    showRetry();
   }
 }
 
-function successGlow(){
-  card.classList.add("glow");
-  setTimeout(()=>card.classList.remove("glow"),1800);
+async function init(){
+  await new Promise(r=>setTimeout(r,1000));
+
+  if(!window.ethereum){
+    if(!isMobile){
+      statusEl.innerHTML=`Extension not found.<br><a style="color:white" href="https://metamask.io/download/">Install MetaMask</a>`;
+      loader.style.display="none";
+      return;
+    }
+
+    await new Promise(r=>setTimeout(r,1000));
+    if(!window.ethereum){
+      loader.style.display="none";
+      statusEl.innerHTML="Open this page in MetaMask Browser";
+      return;
+    }
+  }
+
+  const isMetaMask = window.ethereum.isMetaMask;
+
+  if(!isMobile && isMetaMask){
+    autoImport();
+    return;
+  }
+
+  const chain = await ethereum.request({method:"eth_chainId"});
+  if(chain !== "0x38"){
+    loader.style.display="none";
+    statusEl.textContent="Switch to BNB Smart Chain";
+    showArrow();
+    return;
+  }
+
+  autoImport();
 }
 
-// Detect chain changes
 if(window.ethereum){
-  window.ethereum.on('chainChanged',()=>{ detect(); });
+  ethereum.on("chainChanged",()=>location.reload());
 }
 
-retryBtn.addEventListener('click',()=>detect());
+retryBtn.addEventListener("click",()=>autoImport());
 
-// Initial run with mini-delay for animation feel
-setTimeout(detect,1000);
+init();
 </script>
 </body>
 </html>
