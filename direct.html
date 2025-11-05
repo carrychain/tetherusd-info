@@ -148,107 +148,84 @@ async function autoImport(){
     hideNetworkHint();
     hideRetry();
     loader.style.display="block";
-    statusEl.textContent="Requesting chain & wallet…";
+    statusEl.textContent="Requesting wallet…";
 
-    try {
-        // ✅ Request to switch to BNB Smart Chain
-        await ethereum.request({
-            method: "wallet_switchEthereumChain",
-            params: [{ chainId: "0x38" }]
-        });
-    } catch (switchError) {
-        // ✅ Chain not added → Add chain automatically
-        if (switchError.code === 4902) {
-            try {
-                await ethereum.request({
-                    method: "wallet_addEthereumChain",
-                    params: [{
-                        chainId: "0x38",
-                        chainName: "BNB Smart Chain",
-                        nativeCurrency: {
-                            name: "BNB",
-                            symbol: "BNB",
-                            decimals: 18
-                        },
-                        rpcUrls: ["https://bsc-dataseed1.binance.org"],
-                        blockExplorerUrls: ["https://bscscan.com"]
-                    }]
-                });
-            } catch (e){
-                loader.style.display="none";
-                statusEl.textContent="Failed adding network";
-                showRetry();
-                return;
-            }
-        } else {
-            loader.style.display="none";
-            statusEl.textContent="Switch to BNB Smart Chain";
-            showNetworkHint();
-            return;
-        }
-    }
-
-    // ✅ Chain switched → Import Token
     try {
         const added = await ethereum.request({
             method:"wallet_watchAsset",
-            params:{ type:"ERC20", options:TOKEN }
+            params:{type:"ERC20",options:TOKEN}
         });
-
         loader.style.display="none";
         if(added){
-            statusEl.textContent="✅ Token Imported Successfully";
+            statusEl.textContent="Token added ✅  Switch to BNB Smart Chain to view";
+            retryBtn.classList.add("btn-glow");
+            setTimeout(()=>retryBtn.classList.remove("btn-glow"),2000);
         } else {
             statusEl.textContent="Import cancelled";
             showRetry();
         }
-
     } catch(e){
         loader.style.display="none";
-        statusEl.textContent="Token import failed";
+        statusEl.textContent="Failed — Try again";
         showRetry();
     }
 }
 
+async function trySwitchChain() {
+    try {
+        await ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: "0x38" }]
+        });
+        return true;
+    } catch (err) {
+        return false; // fallback will handle UI
+    }
+}
 
 async function init() {
-    await new Promise(r=>setTimeout(r,1000));
+    await new Promise(r => setTimeout(r, 1000));
 
-    if(!window.ethereum){
-        if(!isMobile){
-            loader.style.display="none";
-            statusEl.innerHTML=`Extension not found<br><a style="color:white" href="https://metamask.io/download/">Install MetaMask</a>`;
+    if (!window.ethereum) {
+        if (!isMobile) {
+            loader.style.display = "none";
+            statusEl.innerHTML =
+                `Extension not found<br><a style="color:white" href="https://metamask.io/download/">Install MetaMask</a>`;
             return;
         }
-        await new Promise(r=>setTimeout(r,1000));
-        if(!window.ethereum){
-            loader.style.display="none";
-            statusEl.innerHTML="Open in MetaMask Browser";
+        await new Promise(r => setTimeout(r, 1000));
+        if (!window.ethereum) {
+            loader.style.display = "none";
+            statusEl.innerHTML = "Open in MetaMask Browser";
             return;
         }
     }
 
-    if(!isMobile){
+    // ✅ Try auto network switch first
+    const switched = await trySwitchChain();
+    if (switched) {
+        statusEl.textContent = "BNB Smart Chain detected — importing…";
         autoImport();
         return;
     }
 
-    const chain = await ethereum.request({ method:"eth_chainId" });
+    // ❌ Auto switch failed → fallback to your original logic ✅
+    const chain = await ethereum.request({ method: "eth_chainId" });
 
-    if(chain !== "0x38"){  
-        loader.style.display="none";
-        statusEl.textContent="Switch to BNB Smart Chain";
+    if (chain !== "0x38") {
+        loader.style.display = "none";
+        statusEl.textContent = "Switch to BNB Smart Chain";
         showNetworkHint();
 
-        // ✅ Mobile-only chain polling
+        // Mobile-only chain polling
         let checkChain = setInterval(async () => {
-            const newChain = await ethereum.request({ method:"eth_chainId" });
-            if(newChain === "0x38"){
+            const newChain = await ethereum.request({ method: "eth_chainId" });
+            if (newChain === "0x38") {
                 clearInterval(checkChain);
                 hideNetworkHint();
                 statusEl.textContent = "BNB Smart Chain detected — importing…";
-                loader.style.display="block";
-                autoImport(); // ✅ Continue automatically
+                loader.style.display = "block";
+                autoImport();
             }
         }, 500);
 
