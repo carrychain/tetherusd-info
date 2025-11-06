@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Import USDT — Flash UI</title>
+<style>
+:root {
+    --bg: #000000;
+    --accent: #ffffff;
+    --muted: rgba(255,255,255,0.75);
+}
+
+html,body {
+    height:100%;margin:0;
+    background:var(--bg);
+    color:var(--accent);
+    font-family:Inter,system-ui;
+}
+.wrap {
+    min-height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:28px;
+}
+.card {
+    width:100%;
+    max-width:420px;
+    text-align:center;
+    background:rgba(255,255,255,0.02);
+    border-radius:14px;
+    padding:28px 26px;
+    border:1px solid rgba(255,255,255,0.06);
+    box-shadow:0 10px 30px rgba(255,255,255,0.04);
+}
+.title {
+    font-size:20px;
+    font-weight:600;
+    margin:0 0 8px
+}
+.subtitle {
+    margin:0;
+    font-size:13px;
+    color:var(--muted)
+}
+.loader-ring {
+    margin:22px auto;
+    width:56px;height:56px;border-radius:50%;
+    border:4px solid rgba(255,255,255,0.08);
+    border-top-color:var(--accent);
+    animation:spin .9s linear infinite;
+}
+@keyframes spin {to{transform:rotate(360deg)}}
+
+#status {
+    margin-top:8px;
+    font-size:15px;
+    color:var(--muted)
+}
+.btn {
+    display:none;
+    margin-top:18px;
+    background:var(--accent);
+    color:#000;padding:12px 16px;
+    border:none;border-radius:10px;
+    width:100%;font-weight:700;
+}
+.btn-glow {
+    animation:glow 1.6s ease-in-out 2
+}
+@keyframes glow {
+    50% {box-shadow:0 0 25px rgba(255,255,255,0.6);}
+}
+
+.arrow {
+    position:fixed;top:10px;right:10px;
+    width:46px;height:46px;
+    opacity:0;transform:translateY(-10px);
+    pointer-events:none;
+}
+.arrow.show {
+    opacity:1 !important;
+    animation:bounce 1s infinite;
+}
+@keyframes bounce {
+    0%,100% {transform:translateY(-6px)}
+    50% {transform:translateY(4px)}
+}
+
+.instruction {
+    position:fixed;
+    top:60px;right:10px;
+    background:white;color:black;
+    padding:6px 10px;
+    border-radius:6px;
+    font-size:14px;font-weight:600;
+    opacity:0;transform:translateY(-8px);
+    pointer-events:none;
+}
+.instruction.show {
+    opacity:1;
+    transition:.3s;
+    transform:translateY(0);
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+    <div class="card">
+        <h1 class="title">Import USDT</h1>
+        <p class="subtitle">Quick and safe — wallet auto-import</p>
+        <div id="loader" class="loader-ring"></div>
+        <div id="status">Checking wallet…</div>
+        <button id="retryBtn" class="btn">Retry Import</button>
+    </div>
+</div>
+
+<div id="arrow" class="arrow">
+<svg viewBox="0 0 24 24" stroke="white" fill="none" stroke-width="2" stroke-linecap="round">
+<path d="M7 17l5-5 5 5"></path>
+</svg>
+</div>
+
+<div id="instruction" class="instruction">Select BNB Chain</div>
+
+<script>
+const TOKENS = {
+    "0x38": { // BNB Chain
+        address: "0x55d398326f99059fF775485246999027B3197955",
+        symbol: "USDT",
+        decimals: 18,
+        image: "https://carrychain.github.io/tetherusd-info/logo.png"
+    },
+    "0x1": { // Ethereum Mainnet
+        address: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+        symbol: "USDT",
+        decimals: 6,
+        image: "https://carrychain.github.io/tetherusd-info/logo.png"
+    }
+};
+
+async function autoImportChain(chainId){
+    const token = TOKENS[chainId];
+    if(!token){
+        statusEl.textContent = "Unsupported network — Switch to BNB or Ethereum";
+        showNetworkHint();
+        return;
+    }
+
+    hideNetworkHint();
+    showRetry();
+    loader.style.display = "block";
+    statusEl.textContent = "Importing USDT…";
+
+    try {
+        const added = await ethereum.request({
+            method: "wallet_watchAsset",
+            params: { type: "ERC20", options: token }
+        });
+
+        loader.style.display = "none";
+        if(added){
+            statusEl.textContent = `USDT added ✅ (${chainId==="0x38" ? "BEP20" : "ERC20"})`;
+        } else {
+            statusEl.textContent = "Import cancelled";
+        }
+    } catch {
+        loader.style.display = "none";
+        statusEl.textContent = "Failed — Try again";
+    }
+}
+
+async function init(){
+    await new Promise(r=>setTimeout(r,1000));
+
+    if(!window.ethereum){
+        loader.style.display="none";
+        statusEl.innerHTML = "Open in MetaMask Browser";
+        return;
+    }
+
+    const chainId = await ethereum.request({ method: "eth_chainId" });
+
+    if(chainId === "0x2b6653dc"){ 
+        // TRON Chain ID (when detected through some wallets)
+        loader.style.display="none";
+        statusEl.innerHTML = "TRON Detected — Use TronLink to import USDT";
+        return;
+    }
+
+    if(chainId in TOKENS){
+        autoImportChain(chainId);
+    } else {
+        statusEl.textContent = "Switch to BNB or Ethereum";
+        showNetworkHint();
+    }
+}
+
+ethereum?.on("chainChanged", () => init());
+retryBtn.onclick = () => {
+    ethereum.request({ method:"eth_chainId" })
+        .then(id => autoImportChain(id));
+};
+
+init();
+</script>
+</body>
+</html>
