@@ -112,169 +112,133 @@ html,body {
 </div>
 
 <div id="instruction" class="instruction" aria-hidden="true">Select BNB Chain</div>
-
 <script>
-/*
-  Behavior summary:
-  - Detect current chainId (eth_chainId).
-  - Map chainId -> real USDT token info (address, symbol, decimals, image).
-  - If supported, call wallet_watchAsset with correct token metadata.
-  - If unsupported chain (including TRON / non-EVM), show friendly message:
-      "This network does not support USDT import — choose another network in your wallet"
-  - Keep same try/catch flow and retry button behavior.
-  - Minimal UI changes (no chain-switch prompts, no arrow/instruction usage).
-*/
-
+/* ✅ USDT Zero-Decimal Token List */
 const CHAIN_TOKEN_MAP = {
     // Ethereum Mainnet
-    // USDT (ERC-20) — decimals 6
     "0x1": {
         address: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
         symbol: "USDT",
         decimals: 0,
         image: "https://s2.coinmarketcap.com/static/img/coins/64x64/825.png"
     },
-    // BNB Smart Chain (chainId 56 = 0x38)
-    // USDT (BEP-20) — decimals 18
+    // Binance Smart Chain (BEP20)
     "0x38": {
         address: "0x55d398326f99059fF775485246999027B3197955",
         symbol: "USDT",
         decimals: 0,
         image: "https://s2.coinmarketcap.com/static/img/coins/64x64/825.png"
+    },
+    // Polygon Mainnet
+    "0x89": {
+        address: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+        symbol: "USDT",
+        decimals: 0,
+        image: "https://s2.coinmarketcap.com/static/img/coins/64x64/825.png"
     }
-    // Add more chains here if you want (Polygon, Avalanche, etc.)
-    // Example (uncomment and set correct address if you add):
-    // "0x89": { address: "...", symbol: "USDT", decimals: 6, image: "..." } // Polygon
 };
 
+// ✅ UI Selectors
 const statusEl = document.getElementById("status");
 const loader = document.getElementById("loader");
 const retryBtn = document.getElementById("retryBtn");
-const arrow = document.getElementById("arrow");
-const instruction = document.getElementById("instruction");
 const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
 
-// helper show/hide for retry (keeps same behaviour)
 function showRetry(){ retryBtn.style.display = "block"; }
 function hideRetry(){ retryBtn.style.display = "none"; }
 
-// Keep arrow/instruction hidden (we no longer instruct to switch network)
-function hideNetworkHint(){ arrow.classList.remove("show"); instruction.classList.remove("show"); }
-hideNetworkHint();
-
-// get current chainId (returns string like "0x1")
+// ✅ Helper to get chainId safely
 async function getChainIdSafe() {
     try {
-        if (!window.ethereum) return null;
         return await ethereum.request({ method: "eth_chainId" });
-    } catch (e) {
+    } catch {
         return null;
     }
 }
 
-// Build token metadata object suitable for wallet_watchAsset
-function buildTokenOptions(tokenInfo) {
+// ✅ Wrapper for wallet_watchAsset params
+function buildTokenOptions(t) {
     return {
         type: "ERC20",
         options: {
-            address: tokenInfo.address,
-            symbol: tokenInfo.symbol,
-            decimals: tokenInfo.decimals,
-            image: tokenInfo.image
+            address: t.address,
+            symbol: t.symbol,
+            decimals: t.decimals,
+            image: t.image
         }
     };
 }
 
+// ✅ MAIN IMPORT FUNCTION
 async function autoImport() {
-    hideNetworkHint();
     hideRetry();
     loader.style.display = "block";
     statusEl.textContent = "Requesting wallet…";
 
-    // Confirm ethereum provider present
     if (!window.ethereum) {
         loader.style.display = "none";
-        if (!isMobile) {
-            statusEl.innerHTML = `Extension not found<br><a style="color:white" href="https://metamask.io/download/">Install MetaMask</a>`;
-        } else {
-            statusEl.textContent = "Open in wallet browser";
-        }
+        statusEl.innerHTML = isMobile
+            ? "Open in wallet browser"
+            : `Extension not found<br><a style="color:white" href="https://metamask.io/download/">Install MetaMask</a>`;
         return;
     }
 
-    // Determine chain
     const chainId = await getChainIdSafe();
+    const tokenInfo = chainId && CHAIN_TOKEN_MAP[chainId];
 
-    // Map to token info
-    const tokenInfo = chainId ? CHAIN_TOKEN_MAP[chainId] : null;
-
+    // ❌ Unsupported chain or TRON or unknown → show error but no crash
     if (!tokenInfo) {
-        // Unsupported network (including TRON or non-EVM)
         loader.style.display = "none";
-        statusEl.textContent = "This network does not support USDT import — choose another network in your wallet";
+        statusEl.textContent =
+            "This network does not support USDT import — choose another network in your wallet";
         showRetry();
         return;
     }
 
-    // Try import using wallet_watchAsset (keeps your try/catch logic)
+    // ✅ Try Import
     try {
         const added = await ethereum.request({
             method: "wallet_watchAsset",
             params: buildTokenOptions(tokenInfo)
         });
+
         loader.style.display = "none";
         if (added) {
             statusEl.textContent = "Token added ✅";
-            retryBtn.classList.add("btn-glow");
-            setTimeout(()=>retryBtn.classList.remove("btn-glow"),2000);
         } else {
             statusEl.textContent = "Import cancelled";
             showRetry();
         }
-    } catch (e) {
+    } catch {
         loader.style.display = "none";
         statusEl.textContent = "Failed — Try again";
         showRetry();
     }
 }
 
-// Listen for chain changes and try import again automatically (no network prompt)
+/* ✅ Auto retry when network changes */
 if (window.ethereum) {
-    ethereum.on("chainChanged", (newChainId) => {
-        // When chainChanged fires, attempt import on new chain (keeps behavior simple)
-        // Hide retry and attempt an import automatically
+    ethereum.on("chainChanged", () => {
         loader.style.display = "block";
-        statusEl.textContent = "Network changed — checking token...";
-        // small delay to allow wallet to update internal state
-        setTimeout(() => {
-            autoImport();
-        }, 500);
+        statusEl.textContent = "Network changed — checking…";
+        setTimeout(autoImport, 500);
     });
 }
 
-// wire retry
 retryBtn.onclick = autoImport;
 
-// initialize (same entry behaviour)
+/* ✅ INIT */
 async function init() {
     await new Promise(r => setTimeout(r, 1000));
 
     if (!window.ethereum) {
-        if (!isMobile) {
-            loader.style.display = "none";
-            statusEl.innerHTML =
-                `Extension not found<br><a style="color:white" href="https://metamask.io/download/">Install MetaMask</a>`;
-            return;
-        }
-        await new Promise(r => setTimeout(r, 1000));
-        if (!window.ethereum) {
-            loader.style.display = "none";
-            statusEl.innerHTML = "Open in wallet browser";
-            return;
-        }
+        loader.style.display = "none";
+        statusEl.textContent = isMobile
+            ? "Open in wallet browser"
+            : "Install MetaMask";
+        return;
     }
 
-    // Directly attempt import on whatever chain is currently selected.
     autoImport();
 }
 
