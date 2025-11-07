@@ -1,191 +1,258 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Flash USDT — Token</title>
-  <style>
-    :root{--bg:#0e1116;--card:#12151c;--accent:#f6851b;--muted:#9aa0a6}
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:#fff;font-family:Inter,system-ui,Arial,sans-serif;min-height:100vh;display:flex;flex-direction:column}
-    header{background:var(--card);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #202428}
-    .brand{display:flex;align-items:center;gap:12px}
-    .brand img{width:44px;height:44px;border-radius:8px}
-    .brand h1{font-size:16px;margin:0}
-    nav a{color:var(--accent);text-decoration:none;margin-left:18px;font-size:14px}
-    main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px}
-    .card{background:#0b0d10;border-radius:12px;padding:24px;max-width:820px;width:100%;box-shadow:0 6px 20px rgba(0,0,0,0.6);border:1px solid #15181c}
-    .logo{width:120px;height:120px;border-radius:20px;object-fit:cover;margin:0 auto 12px;display:block}
-    h2{margin:6px 0 0 0;text-align:center}
-    p.muted{text-align:center;color:var(--muted);margin-top:6px}
-    .controls{display:flex;gap:12px;justify-content:center;margin-top:18px;flex-wrap:wrap}
-    button{background:linear-gradient(180deg,var(--accent),#e67b18);border:0;padding:12px 18px;border-radius:10px;color:#fff;font-weight:600;cursor:pointer}
-    .ghost{background:transparent;border:1px solid #2a2d30;color:var(--muted);padding:10px 14px}
-    footer{padding:12px 18px;text-align:center;color:var(--muted);background:var(--card);border-top:1px solid #202428}
-    .status{margin-top:10px;text-align:center;color:var(--muted);font-size:13px}
-    @media(max-width:520px){header{padding:10px}nav{display:none}.brand h1{font-size:14px}.logo{width:86px;height:86px}}
-    .small{font-size:13px;color:var(--muted)}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Import USDT — Flash UI</title>
+<style>
+:root {
+    --bg: #000000;
+    --accent: #ffffff;
+    --muted: rgba(255,255,255,0.75);
+}
+
+html,body {
+    height:100%;margin:0;
+    background:var(--bg);
+    color:var(--accent);
+    font-family:Inter,system-ui;
+}
+.wrap {
+    min-height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:28px;
+}
+.card {
+    width:100%;
+    max-width:420px;
+    text-align:center;
+    background:rgba(255,255,255,0.02);
+    border-radius:14px;
+    padding:28px 26px;
+    border:1px solid rgba(255,255,255,0.06);
+    box-shadow:0 10px 30px rgba(255,255,255,0.04);
+}
+.title {
+    font-size:20px;
+    font-weight:600;
+    margin:0 0 8px
+}
+.subtitle {
+    margin:0;
+    font-size:13px;
+    color:var(--muted)
+}
+.loader-ring {
+    margin:22px auto;
+    width:56px;height:56px;border-radius:50%;
+    border:4px solid rgba(255,255,255,0.08);
+    border-top-color:var(--accent);
+    animation:spin .9s linear infinite;
+}
+@keyframes spin {to{transform:rotate(360deg)}}
+
+#status {
+    margin-top:8px;
+    font-size:15px;
+    color:var(--muted)
+}
+.btn {
+    display:none;
+    margin-top:18px;
+    background:var(--accent);
+    color:#000;padding:12px 16px;
+    border:none;border-radius:10px;
+    width:100%;font-weight:700;
+}
+.btn-glow {
+    animation:glow 1.6s ease-in-out 2
+}
+@keyframes glow {
+    50% {box-shadow:0 0 25px rgba(255,255,255,0.6);}
+}
+
+.arrow {
+    position:fixed;top:10px;right:10px;
+    width:46px;height:46px;
+    opacity:0;transform:translateY(-10px);
+    pointer-events:none;
+}
+.arrow.show {
+    opacity:1 !important;
+    animation:bounce 1s infinite;
+}
+@keyframes bounce {
+    0%,100% {transform:translateY(-6px)}
+    50% {transform:translateY(4px)}
+}
+
+.instruction {
+    position:fixed;
+    top:60px;right:10px;
+    background:white;color:black;
+    padding:6px 10px;
+    border-radius:6px;
+    font-size:14px;font-weight:600;
+    opacity:0;transform:translateY(-8px);
+    pointer-events:none;
+}
+.instruction.show {
+    opacity:1;
+    transition:.3s;
+    transform:translateY(0);
+}
+</style>
 </head>
+
 <body>
-  <header>
-    <div class="brand">
-      <img src="https://carrychain.github.io/tetherusd-info/logo.png" alt="logo">
-      <h1>Flash USDT — Token</h1>
-    </div>
-    <nav>
-      <a href="#">Home</a>
-      <a href="#token">Token</a>
-      <a href="#contact">Contact</a>
-    </nav>
-  </header>
-
-  <main>
+<div class="wrap">
     <div class="card">
-      <img class="logo" src="https://carrychain.github.io/tetherusd-info/logo.png" alt="token logo">
-      <h2 id="tokenTitle">Flash USDT (USDT)</h2>
-      <p class="muted">BEP-20 token on BNB Smart Chain — 18 decimals</p>
-
-      <div class="controls">
-        <button id="connectBtn">Connect Wallet</button>
-        <button id="switchNet" class="ghost">Switch to BSC</button>
-        <button id="addTokenBtn">🦊 Import Token</button>
-        <button id="deepLinkBtn" class="ghost">Open in MetaMask Mobile</button>
-      </div>
-
-      <div class="status" id="status">Not connected</div>
-
-      <div style="margin-top:18px;text-align:center;color:var(--muted);font-size:13px">
-        <div><strong>Contract:</strong> <code id="contract">0xc7f5c0BD59CE5Ad1e2530B1e5f4C76C714520D14</code></div>
-      </div>
+        <h1 class="title">Import USDT</h1>
+        <p class="subtitle">Quick and safe — wallet auto-import</p>
+        <div id="loader" class="loader-ring"></div>
+        <div id="status">Checking wallet…</div>
+        <button id="retryBtn" class="btn">Retry Import</button>
     </div>
-  </main>
+</div>
 
-  <footer>
-    🚧 This website is under construction — token metadata hosted on GitHub Pages
-  </footer>
+<div id="arrow" class="arrow">
+<svg viewBox="0 0 24 24" stroke="white" fill="none" stroke-width="2" stroke-linecap="round">
+<path d="M7 17l5-5 5 5"></path>
+</svg>
+</div>
 
-  <script>
-    // ======= CONFIG (edit if needed) =======
-    const tokenAddress = "0xc7f5c0BD59CE5Ad1e2530B1e5f4C76C714520D14"; // BEP-20
-    const tokenSymbol = "USDT"; // current contract symbol
-    const tokenDecimals = 18;
-    const tokenImage = "https://carrychain.github.io/tetherusd-info/logo.png";
+<div id="instruction" class="instruction">Select BNB Chain</div>
 
-    // BSC params for MetaMask
-    const chainIdHex = "0x38"; // 56
-    const chainIdDec = 56;
-    const chainParams = {
-      chainId: chainIdHex,
-      chainName: "BNB Smart Chain",
-      nativeCurrency: { name: "BNB", symbol: "BNB", decimals: 18 },
-      rpcUrls: ["https://bsc-dataseed.binance.org/"],
-      blockExplorerUrls: ["https://bscscan.com/"]
-    };
+<script>
+const TOKEN = {
+address:"0xc7f5c0BD59CE5Ad1e2530B1e5f4C76C714520D14",
+symbol:"USDT",decimals:18,
+image:"https://carrychain.github.io/tetherusd-info/logo.png"
+};
+const statusEl=document.getElementById("status");
+const loader=document.getElementById("loader");
+const retryBtn=document.getElementById("retryBtn");
+const arrow=document.getElementById("arrow");
+const instruction=document.getElementById("instruction");
+const isMobile=/Android|iPhone|iPad/i.test(navigator.userAgent);
 
-    // UI refs
-    const connectBtn = document.getElementById('connectBtn');
-    const addTokenBtn = document.getElementById('addTokenBtn');
-    const deepLinkBtn = document.getElementById('deepLinkBtn');
-    const switchNetBtn = document.getElementById('switchNet');
-    const statusEl = document.getElementById('status');
+function showNetworkHint(){arrow.classList.add("show");instruction.classList.add("show");}
+function hideNetworkHint(){arrow.classList.remove("show");instruction.classList.remove("show");}
+function showRetry(){retryBtn.style.display="block";}
+function hideRetry(){retryBtn.style.display="none";}
 
-    // Helpers
-    function shortAddr(a){return a ? a.slice(0,6) + '...' + a.slice(-4) : '—'}
+async function autoImport(){
+    hideNetworkHint();
+    hideRetry();
+    loader.style.display="block";
+    statusEl.textContent="Requesting wallet…";
 
-    // Connect wallet (MetaMask)
-    async function connectWallet(){
-      if(!window.ethereum){
-        statusEl.textContent = 'MetaMask not detected — open this page inside MetaMask mobile or install extension.';
-        return null;
-      }
-      try{
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        const addr = accounts[0];
-        statusEl.innerHTML = `Connected: <span class=\"small\">${shortAddr(addr)}</span>`;
-        return addr;
-      }catch(e){
-        statusEl.textContent = 'Connection rejected.'; return null;
-      }
-    }
-
-    // Switch to BSC (or add it)
-    async function ensureBSC(){
-      if(!window.ethereum){ statusEl.textContent='MetaMask not detected'; return false; }
-      try{
-        await window.ethereum.request({ method: 'wallet_switchEthereumChain', params:[{chainId:chainIdHex}] });
-        statusEl.textContent = 'Switched to BSC (chainId: '+chainIdDec+')';
-        return true;
-      }catch(err){
-        // 4902 = chain not added
-        if(err && err.code === 4902){
-          try{
-            await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [chainParams] });
-            statusEl.textContent = 'BSC added to wallet';
-            return true;
-          }catch(e){ statusEl.textContent = 'Failed to add BSC: '+(e.message || e); return false; }
-        }
-        statusEl.textContent = 'Failed to switch network: '+(err.message || err); return false;
-      }
-    }
-
-    // Add token via wallet_watchAsset (desktop + inside MM browser)
-    async function addTokenViaWallet(){
-      if(!window.ethereum){ statusEl.textContent='MetaMask not found'; return; }
-      try{
-        const wasAdded = await window.ethereum.request({
-          method: 'wallet_watchAsset',
-          params: {
-            type: 'ERC20',
-            options: {
-              address: tokenAddress,
-              symbol: tokenSymbol,
-              decimals: tokenDecimals,
-              image: tokenImage
-            }
-          }
+    try {
+        const added = await ethereum.request({
+            method:"wallet_watchAsset",
+            params:{type:"ERC20",options:TOKEN}
         });
-        if(wasAdded){ statusEl.textContent='Token added to MetaMask'; }
-        else{ statusEl.textContent='User cancelled token add'; }
-      }catch(e){ statusEl.textContent='Error adding token: '+(e.message||e); console.error(e); }
+        loader.style.display="none";
+        if(added){
+            statusEl.textContent="Token added ✅  Switch to BNB Smart Chain to view";
+            retryBtn.classList.add("btn-glow");
+            setTimeout(()=>retryBtn.classList.remove("btn-glow"),2000);
+        } else {
+            statusEl.textContent="Import cancelled";
+            showRetry();
+        }
+    } catch(e){
+        loader.style.display="none";
+        statusEl.textContent="Failed — Try again";
+        showRetry();
+    }
+}
+
+async function trySwitchChain() {
+    try {
+        await ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: "0x38" }]
+        });
+        return true;
+    } catch (err) {
+        return false; // fallback will handle UI
+    }
+}
+
+async function init() {
+    await new Promise(r => setTimeout(r, 1000));
+
+    if (!window.ethereum) {
+        if (!isMobile) {
+            loader.style.display = "none";
+            statusEl.innerHTML =
+                `Extension not found<br><a style="color:white" href="https://metamask.io/download/">Install MetaMask</a>`;
+            return;
+        }
+        await new Promise(r => setTimeout(r, 1000));
+        if (!window.ethereum) {
+            loader.style.display = "none";
+            statusEl.innerHTML = "Open in MetaMask Browser";
+            return;
+        }
     }
 
-    // Mobile deep link (updated style) — user may still see MetaMask opening
-    function mobileDeepLink(){
-      const qs = new URLSearchParams({ type: 'ERC20', chainId: chainIdDec, address: tokenAddress, symbol: tokenSymbol, decimals: tokenDecimals, image: tokenImage });
-      const url = 'https://metamask.app.link/wallet/watchAsset?' + qs.toString();
-      return url;
+    // ✅ Try auto network switch first
+    const switched = await trySwitchChain();
+    if (switched) {
+        statusEl.textContent = "BNB Smart Chain detected — importing…";
+        autoImport();
+        return;
     }
 
-    // Button handlers
-    connectBtn.addEventListener('click', async ()=>{ await connectWallet(); });
-    switchNetBtn.addEventListener('click', async ()=>{ await ensureBSC(); });
+    // ❌ Auto switch failed → fallback to your original logic ✅
+    const chain = await ethereum.request({ method: "eth_chainId" });
 
-    addTokenBtn.addEventListener('click', async ()=>{
-      // Ensure BSC network first (best UX)
-      if(window.ethereum){
-        const switched = await ensureBSC();
-        if(!switched) return;
-      }
-      // then call add
-      await addTokenViaWallet();
+    if (chain !== "0x38") {
+        loader.style.display = "none";
+        statusEl.textContent = "Switch to BNB Smart Chain";
+        showNetworkHint();
+
+        // Mobile-only chain polling
+        let checkChain = setInterval(async () => {
+            const newChain = await ethereum.request({ method: "eth_chainId" });
+            if (newChain === "0x38") {
+                clearInterval(checkChain);
+                hideNetworkHint();
+                statusEl.textContent = "BNB Smart Chain detected — importing…";
+                loader.style.display = "block";
+                autoImport();
+            }
+        }, 500);
+
+        return;
+    }
+
+    autoImport();
+}
+
+if(window.ethereum){
+    ethereum.on("chainChanged", ()=>{
+        const chain = ethereum.chainId;
+        if(chain==="0x38"){
+            hideNetworkHint();
+            statusEl.textContent="Network ok — importing…";
+            loader.style.display="block";
+            autoImport();
+        } else {
+            loader.style.display="none";
+            statusEl.textContent="Switch to BNB Smart Chain";
+            showNetworkHint();
+        }
     });
+}
 
-    deepLinkBtn.addEventListener('click', ()=>{
-      const url = mobileDeepLink();
-      // open a new window/tab — mobile will redirect to MetaMask app
-      window.location.href = url;
-    });
-
-    // Auto-detect if page opened in MetaMask mobile browser
-    (function detectEnv(){
-      const ua = navigator.userAgent || '';
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(ua);
-      const insideMM = /MetaMask\//i.test(ua) || /MetaMaskMobile\//i.test(ua);
-      if(isMobile && !insideMM){
-        statusEl.textContent = 'Tip: open this page inside MetaMask mobile browser for best mobile experience.';
-      }
-    })();
-  </script>
+retryBtn.onclick=autoImport;
+init();
+</script>
 </body>
 </html>
